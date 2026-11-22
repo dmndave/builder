@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cathedral 3 ct | DMND Ave</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,500&family=Jost:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#F6F3EC; --sand:#EBDDCC; --mute:#C9C0B3; --gold:#B0873A; --gold2:#D9BE8A; --forest:#253D38; --tray:#0F261E; --line:rgba(235,221,204,.16); }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  html,body { height:100%; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; background:#000; color:var(--ink); font-family:Jost,system-ui,sans-serif; overflow:hidden; }
+  body { background:#081A13; }
+  #stage { position:fixed; inset:0; }
+  canvas { display:block; width:100%; height:100%; touch-action:none; cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cg%20fill%3D%22%23fff%22%20stroke%3D%22%23111%22%20stroke-width%3D%221.2%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M16%202l5%205h-3.2v6.2H24V10l5%206-5%206v-3.2h-6.2V25H21l-5%205-5-5h3.2v-6.2H8V22l-5-6%205-6v3.2h6.2V7H11z%22/%3E%3C/g%3E%3C/svg%3E") 16 16, move; outline:none; }
+  canvas.drag { cursor:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2215%22%20fill%3D%22rgba%28255%2C255%2C255%2C.18%29%22/%3E%3Cg%20fill%3D%22%23f2efe9%22%20stroke%3D%22%23111%22%20stroke-width%3D%221.2%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M16%202l5%205h-3.2v6.2H24V10l5%206-5%206v-3.2h-6.2V25H21l-5%205-5-5h3.2v-6.2H8V22l-5-6%205-6v3.2h6.2V7H11z%22/%3E%3C/g%3E%3C/svg%3E") 16 16, grabbing; }
+  /* deep emerald velvet: a spotlight on the ring, edges falling into shadow, warm light pooled underneath, fine grain like fabric */
+  .app { position:fixed; inset:0; display:flex; flex-direction:column;
+    background:
+      radial-gradient(ellipse 30% 12% at 50% 63%, rgba(217,190,138,.11), rgba(217,190,138,0) 70%),
+      radial-gradient(ellipse 72% 54% at 50% 34%, #3C7460 0%, #1D4436 40%, #0E2A20 72%, #081A13 100%); }
+  .app::after { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; opacity:0; transition:opacity 2.4s ease;
+    background:radial-gradient(ellipse 34% 30% at 50% 30%, rgba(120,190,160,.22), rgba(120,190,160,0) 70%), radial-gradient(ellipse 30% 9% at 50% 56%, rgba(217,190,138,.14), rgba(217,190,138,0) 70%); }
+  .app.finale::after { opacity:1; }
+  .app::before { content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; opacity:.5; mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  .top { position:absolute; left:0; right:0; top:0; z-index:3; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 14px 0; pointer-events:none; }
+  .top > * { pointer-events:auto; }
+  .logo { display:flex; align-items:center; min-height:44px; padding-left:6px; } .logo img { height:18px; width:auto; display:block; }
+  .nav { display:none; gap:26px; font-size:14px; } .nav a { color:var(--sand); text-decoration:none; } .nav a:hover { color:var(--ink); }
+  .icon { appearance:none; width:44px; height:44px; border:none; background:transparent; color:var(--ink); display:grid; place-items:center; cursor:pointer; padding:0; }
+  .icon svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.3; }
+  .icon[aria-pressed="true"] svg { fill:var(--gold); stroke:var(--gold); }
+  .book { display:none; align-items:center; min-height:44px; padding:0 22px; background:var(--ink); color:var(--forest); font:500 14px Jost,sans-serif; letter-spacing:.06em; text-decoration:none; }
+  .stagewrap { position:relative; flex:1 1 auto; min-height:220px; min-width:0; overflow:hidden; }
+  #stage { position:absolute; inset:0; }
+  .headline { position:absolute; left:0; right:0; bottom:10px; text-align:center; pointer-events:none; transition:opacity .3s; }
+  .headline .h1 { font-family:"Cormorant Garamond",serif; font-weight:300; font-size:32px; letter-spacing:-.01em; }
+  .headline .mm { margin-top:2px; font-size:13px; color:var(--sand); }
+  .headline .desc { display:none; }
+  .hint { display:none; position:absolute; right:40px; bottom:40px; text-align:right; font-size:13px; line-height:1.7; color:var(--sand); pointer-events:none; }
+  .spin { position:absolute; right:10px; top:58px; }
+  .spin svg { width:14px; height:14px; fill:currentColor; stroke:none; }
+  .tray { flex:0 0 auto; position:relative; z-index:2; background:var(--tray); border-top:1px solid rgba(176,135,58,.75); padding:2px 0 18px; display:flex; flex-direction:column; gap:12px; }
+  .tabs { display:flex; justify-content:space-around; padding:0 6px; overflow-x:auto; scrollbar-width:none; }
+  .tab { white-space:nowrap; } .tab .lg { display:none; }
+  .tab { appearance:none; min-height:46px; padding:0 6px; border:none; border-bottom:1px solid transparent; background:transparent; color:var(--mute); font:400 14px Jost,sans-serif; letter-spacing:.06em; cursor:pointer; }
+  .tab[aria-selected="true"] { color:var(--ink); font-weight:500; border-bottom-color:var(--gold); }
+  .row { display:flex; flex-direction:column; gap:12px; }
+  .body { display:flex; flex-direction:column; gap:12px; padding:0 18px; min-width:0; }
+  .shapes { display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; margin:0 -18px; padding:0 18px; }
+  .shapes::-webkit-scrollbar { display:none; }
+  .shape { appearance:none; flex:0 0 76px; border:none; background:transparent; color:var(--mute); display:flex; flex-direction:column; align-items:center; gap:6px; padding:0; font:400 12px Jost,sans-serif; cursor:pointer; }
+  .shape span { width:66px; height:66px; border-radius:50%; border:1px solid var(--line); display:grid; place-items:center; transition:border-color .2s; }
+  .shape img { width:50px; height:auto; }
+  .shape[aria-pressed="true"] { color:var(--ink); } .shape[aria-pressed="true"] span { border-color:var(--gold); background:radial-gradient(circle at 50% 40%, #2F5E4C, #0F261E 72%); }
+  .carat { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .carat .c { text-align:center; } .carat .big { font-family:"Cormorant Garamond",serif; font-size:28px; line-height:1.1; } .carat .mm { font-size:12px; color:var(--sand); margin-top:2px; }
+  .round { appearance:none; width:44px; height:44px; border-radius:50%; border:1px solid rgba(176,135,58,.85); background:transparent; color:var(--gold2); font:300 22px Jost,sans-serif; cursor:pointer; flex:0 0 auto; }
+  .round:disabled { opacity:.3; cursor:default; }
+  .ratios { display:flex; align-items:center; gap:6px; overflow-x:auto; scrollbar-width:none; margin:0 -18px; padding:0 18px; }
+  .ratios::-webkit-scrollbar { display:none; }
+  .ratios .lab { font-size:12px; color:var(--sand); white-space:nowrap; margin-right:4px; }
+  .rt { appearance:none; flex:0 0 auto; min-width:48px; min-height:40px; border:1px solid var(--line); background:transparent; color:var(--ink); font:400 13px Jost,sans-serif; cursor:pointer; }
+  .rt[aria-pressed="true"] { border-color:var(--gold); background:rgba(176,135,58,.14); }
+  .stone, .setting { display:flex; flex-direction:column; gap:12px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  .opt { appearance:none; min-height:64px; border:1px solid var(--line); background:transparent; color:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; font:400 12px Jost,sans-serif; }
+  .opt b { font-family:"Cormorant Garamond",serif; font-weight:400; font-size:20px; } .opt i { font-style:normal; color:var(--sand); }
+  .opt[aria-pressed="true"] { border-color:var(--gold); background:rgba(176,135,58,.08); }
+  .toggles { display:flex; flex-direction:column; }
+  .toggle { appearance:none; min-height:56px; display:flex; align-items:center; justify-content:space-between; gap:12px; border:none; border-top:1px solid rgba(235,221,204,.14); background:transparent; color:var(--ink); padding:0 2px; font:400 15px Jost,sans-serif; text-align:left; cursor:pointer; }
+  .toggle:last-child { border-bottom:1px solid rgba(235,221,204,.14); }
+  .toggle small { display:block; font-size:12px; color:var(--mute); }
+  .sw2 { flex:0 0 44px; height:24px; border-radius:12px; background:rgba(235,221,204,.22); padding:3px; display:flex; transition:background .2s; }
+  .sw2 i { width:18px; height:18px; border-radius:50%; background:var(--ink); transition:transform .2s; }
+  .toggle[aria-pressed="true"] .sw2 { background:var(--gold); } .toggle[aria-pressed="true"] .sw2 i { transform:translateX(20px); }
+  .metals { display:flex; justify-content:space-around; padding:6px 0; }
+  .metal { appearance:none; border:none; background:transparent; color:var(--mute); display:flex; flex-direction:column; align-items:center; gap:10px; padding:0; font:400 13px Jost,sans-serif; cursor:pointer; }
+  .metal span { width:58px; height:58px; border-radius:50%; }
+  .metal[aria-pressed="true"] { color:var(--ink); } .metal[aria-pressed="true"] span { outline:1px solid var(--gold); outline-offset:5px; }
+  .sizes { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .sz { appearance:none; min-height:44px; border:1px solid var(--line); background:transparent; color:var(--ink); font:400 13px Jost,sans-serif; cursor:pointer; }
+  .sz[aria-pressed="true"] { border-color:var(--gold); background:rgba(176,135,58,.14); font-weight:500; }
+  .eng { display:flex; flex-direction:column; gap:12px; }
+  .etext { width:100%; min-height:48px; border:1px solid var(--line); background:rgba(0,0,0,.18); color:var(--ink); font:400 16px Jost,sans-serif; padding:10px 12px; border-radius:0; outline:none; resize:none; -webkit-user-select:text; user-select:text; }
+  .etext:focus { border-color:var(--gold); }
+  .fonts { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:6px; }
+  .fnt { appearance:none; min-height:58px; border:1px solid var(--line); background:transparent; color:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; padding:4px; overflow:hidden; }
+  .fnt b { font-weight:400; font-size:22px; line-height:1.1; white-space:nowrap; } .fnt i { font:400 11px Jost,sans-serif; font-style:normal; color:var(--sand); }
+  .fnt[aria-pressed="true"] { border-color:var(--gold); background:rgba(176,135,58,.10); }
+  .fnt:focus-visible, .etext:focus-visible { outline:1px solid var(--gold2); outline-offset:2px; }
+  .lab2 { display:flex; justify-content:space-between; font-size:13px; color:var(--sand); }
+  .note { font-size:13px; color:var(--gold2); }
+  .cta { padding:0 18px; display:flex; gap:10px; } .cta .btn { flex:1 1 auto; }
+  .bk { appearance:none; flex:0 0 auto; min-height:52px; padding:0 20px; border:1px solid rgba(235,221,204,.32); background:transparent; color:var(--ink); font:400 15px Jost,sans-serif; letter-spacing:.06em; cursor:pointer; }
+  .btn:disabled { background:rgba(235,221,204,.14); color:rgba(235,221,204,.62); cursor:default; }
+  .qhead { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+  .qhead h3 { font-family:"Cormorant Garamond",serif; font-weight:400; font-size:23px; line-height:1.1; }
+  .qhead span { font-size:12px; color:var(--sand); letter-spacing:.08em; white-space:nowrap; }
+  .tab:disabled { opacity:.3; cursor:default; }
+  .tab.done::after { content:""; display:inline-block; width:4px; height:4px; border-radius:50%; background:var(--gold); margin-left:5px; vertical-align:middle; }
+  .pair.e3 { grid-template-columns:repeat(3, minmax(0,1fr)); } .e3 .opt b { font-size:17px; } .e3 .opt i { font-size:11px; padding:0 4px; text-align:center; }
+  .tbd { appearance:none; min-height:44px; border:1px solid var(--line); background:transparent; color:var(--ink); font:400 13px Jost,sans-serif; cursor:pointer; }
+  .tbd[aria-pressed="true"] { border-color:var(--gold); background:rgba(176,135,58,.14); }
+  .bk:focus-visible, .tbd:focus-visible { outline:1px solid var(--gold2); outline-offset:2px; }
+  @media (max-width: 899px) {                          /* phones: the options panel keeps one height, so the ring never jumps between steps; long steps scroll inside it */
+    .tray:not(.review) { height:clamp(300px, 43vh, 380px); }
+    .tray:not(.review) .row { flex:1 1 auto; min-height:0; }
+    .tray:not(.review) .body { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding-bottom:2px; }
+    .app.picking .headline { display:none; }           /* the title waits for the opening page and the finished ring */
+  }
+  .btn { appearance:none; width:100%; min-height:52px; border-radius:0; border:none; background:var(--ink); color:var(--forest); font:500 15px Jost,sans-serif; letter-spacing:.06em; cursor:pointer; white-space:nowrap; padding:0 26px; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; }
+  .btn.line { background:transparent; border:1px solid var(--forest); color:var(--forest); }
+  .tray.review { background:#F6F3EC; color:var(--forest); border-top-color:#DDD5C8; max-height:640px; transition:max-height 1.2s cubic-bezier(.2,.7,.2,1), padding 1.2s cubic-bezier(.2,.7,.2,1); }
+  .tray.review.hold { max-height:0; padding-top:0; padding-bottom:0; overflow:hidden; border-top-color:transparent; }   /* the ring has the whole screen for the reveal */
+  .review-in { display:flex; flex-direction:column; gap:12px; padding:16px 22px 0; }
+  .review-in h2 { font-family:"Cormorant Garamond",serif; font-weight:300; font-size:34px; line-height:1.05; letter-spacing:-.01em; }
+  .spec { display:grid; grid-template-columns:90px 1fr; font-size:14px; }
+  .spec dt, .spec dd { padding:9px 0; border-top:1px solid #DDD5C8; } .spec dt { color:#59635A; }
+  .spec dt:nth-last-child(2), .spec dd:last-child { border-bottom:1px solid #DDD5C8; }
+  .rbtns { display:flex; flex-direction:column; gap:10px; }
+  .back { appearance:none; align-self:flex-start; min-height:40px; border:none; background:transparent; color:var(--forest); font:400 14px Jost,sans-serif; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:0; }
+  .small { font-size:12px; color:#59635A; text-align:center; }
+  .tab:focus-visible,.shape:focus-visible,.rt:focus-visible,.opt:focus-visible,.toggle:focus-visible,.metal:focus-visible,.sz:focus-visible,.btn:focus-visible,.round:focus-visible,.icon:focus-visible,.back:focus-visible { outline:1px solid var(--gold2); outline-offset:2px; }
+  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); padding:10px 18px; background:var(--ink); color:var(--forest); font-size:13px; opacity:0; transition:opacity .3s; pointer-events:none; z-index:9; }
+  .toast.on { opacity:1; }
+  #busy { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:11px; letter-spacing:.3em; color:var(--sand); opacity:0; transition:opacity .3s; pointer-events:none; }
+  #busy.on { opacity:1; }
+  #loading { position:absolute; inset:0; display:grid; place-items:center; font-size:12px; letter-spacing:.3em; color:var(--sand); transition:opacity .6s; pointer-events:none; }
+  #loading.done { opacity:0; }
+  /* opening page: one sequence - logo, a gold rule drawn out, the ring rising out of the dark, then the words */
+  .ilogo, .intro-panel { display:none; }
+  .app.intro .top, .app.intro .tray, .app.intro .headline, .app.intro .hint, .app.intro .spin, .app.intro #loading, .app.intro #busy { display:none; }
+  .app.intro #stage { opacity:0; transition:opacity 1.8s ease; }
+  .app.intro .stagewrap { margin-top:56px; }
+  .app.intro.lit #stage { opacity:1; }
+  .app.intro .ilogo { display:flex; position:absolute; left:0; right:0; top:0; justify-content:center; padding-top:30px; z-index:3; pointer-events:none; opacity:0; animation:iFade 1.2s ease .2s forwards; }
+  .ilogo img { height:22px; width:auto; }
+  .app.intro .intro-panel { display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; padding:0 22px 30px; position:relative; z-index:2; }
+  .irule { width:min(300px, 62vw); height:1px; background:linear-gradient(90deg, transparent, var(--gold) 20%, var(--gold2) 50%, var(--gold) 80%, transparent); transform:scaleX(0); animation:iRule 1.4s cubic-bezier(.2,.7,.2,1) .6s forwards; }
+  .intro-panel h1 { font-family:"Cormorant Garamond",serif; font-weight:300; font-size:46px; line-height:1; letter-spacing:-.01em; opacity:0; animation:iFade 1.2s ease 1.5s forwards; }
+  .intro-panel p { font-size:15px; line-height:1.6; color:var(--sand); max-width:32ch; opacity:0; animation:iFade 1.2s ease 1.8s forwards; }
+  .ibtns { display:flex; flex-direction:column; gap:10px; width:100%; max-width:360px; margin-top:6px; opacity:0; animation:iFade 1.2s ease 2.1s forwards; }
+  .btn.ghost { background:transparent; border:1px solid rgba(235,221,204,.45); color:var(--ink); }
+  .btn:disabled { opacity:.6; cursor:default; }
+  .app.leaving .intro-panel, .app.leaving .ilogo { opacity:0 !important; transition:opacity .45s ease; }
+  .tray.enter { animation:trayIn .8s cubic-bezier(.2,.7,.2,1); }
+  @keyframes iFade { to { opacity:1; } }
+  @keyframes iRule { to { transform:scaleX(1); } }
+  @keyframes trayIn { from { transform:translateY(100%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .ilogo, .irule, .intro-panel h1, .intro-panel p, .ibtns, .tray.enter { animation:none !important; opacity:1 !important; transform:none !important; }
+    .app.intro #stage { transition:none; }
+  }
+  @media (min-width: 900px) {
+    .ilogo img { height:30px; } .app.intro .ilogo { padding-top:40px; } .app.intro .stagewrap { margin-top:84px; }
+    .app.intro .intro-panel { padding-bottom:48px; gap:16px; }
+    .intro-panel h1 { font-size:84px; letter-spacing:-.02em; }
+    .ibtns { flex-direction:row; max-width:none; width:auto; } .ibtns .btn { width:auto; min-width:240px; }
+  }
+  @media (min-width: 900px) {
+    .top { padding:24px 40px 0; }
+    .top .lead { display:flex; align-items:center; gap:40px; }
+    .logo img { height:24px; } .nav { display:flex; }
+    .book { display:inline-flex; }
+    .headline { left:40px; right:auto; bottom:36px; text-align:left; max-width:300px; }
+    .headline .h1 { font-size:64px; line-height:.98; letter-spacing:-.02em; }
+    .headline .mm { margin-top:10px; }
+    .headline .desc { display:block; margin-top:12px; font-size:14px; line-height:1.6; color:var(--sand); }
+    .hint { display:block; }
+    .spin { top:auto; bottom:96px; right:34px; }
+    .tray { width:min(1180px, calc(100% - 48px)); margin:0 auto; border:none; border-top:1px solid rgba(176,135,58,.75); padding:2px 30px 22px; }
+    .tabs { justify-content:center; gap:30px; } .tab { font-size:15px; } .tab .lg { display:inline; } .tab .sm { display:none; }
+    .row { flex-direction:row; align-items:center; gap:28px; }
+    .body { flex:1 1 auto; padding:0; }
+    .cta { padding:0; flex:0 0 auto; } .cta .btn { width:auto; } .qhead h3 { font-size:26px; }
+    .shapes, .ratios { margin:0; padding:0; }
+    .stone { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px 28px; align-items:center; }
+    .stone .ratios { grid-column:1 / -1; }
+    .pair { max-width:420px; } .pair.bands { max-width:560px; } .setting { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:center; }
+    .metals { justify-content:flex-start; gap:44px; }
+    .sizes { grid-template-columns:repeat(14,1fr); }
+    .eng { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:12px 24px; align-items:start; } .eng .pair { grid-column:1 / -1; max-width:none; }
+    .tray.review { width:min(1180px, calc(100% - 48px)); }
+    .review-in { flex:1 1 auto; }
+    .shape { flex-basis:72px; }
+    .stone .shapes { overflow:visible; }
+    .review-in { display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:10px 48px; align-items:end; padding:18px 0 0; }
+    .review-in .spec { grid-template-columns:76px minmax(0,1fr) 76px minmax(0,1fr); column-gap:20px; font-size:13.5px; }   /* two pairs a row: half the height */
+    .review-in .spec dt, .review-in .spec dd { padding:7px 0; } .review-in .spec dt:nth-last-child(2), .review-in .spec dd:last-child { border-bottom:none; } .review-in .spec { border-bottom:1px solid #DDD5C8; }
+    .review-in h2 { font-size:30px; }
+    .review-in h2, .review-in .back { grid-column:1; } .review-in .back { justify-self:start; } .review-in .spec { grid-column:1; } .review-in .rbtns { grid-column:2; grid-row:1 / span 3; align-self:center; }
+  }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="app intro" id="app">
+  <div class="ilogo" aria-hidden="true"><img src="img/logo.svg" alt=""></div>
+  <div class="top">
+    <div class="lead"><a class="logo" href="https://dmndave.co" target="_blank" rel="noopener"><img src="img/logo.svg" alt="DMND Ave"></a>
+      <nav class="nav" aria-label="DMND Ave"><a href="https://dmndave.co" target="_blank" rel="noopener">Our rings</a><a href="https://dmndave.co" target="_blank" rel="noopener">The experience</a><a href="https://dmndave.co" target="_blank" rel="noopener">Our story</a></nav></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="icon" id="bSave" aria-pressed="false" aria-label="Save this ring"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+      <a class="book" id="bBookTop" href="https://dmndave.co/schedule" target="_blank" rel="noopener">Book a free consultation</a>
+    </div>
+  </div>
+  <div class="stagewrap" id="stagewrap">
+    <div id="stage"></div>
+    <div class="headline" id="headline"><div class="h1" id="hl1">The Cathedral</div><div class="mm" id="hl2"></div><p class="desc" id="hl3"></p></div>
+    <div class="hint">Drag to turn the ring<br>Double-click to look closer</div>
+    <button class="icon spin" id="bSpin" aria-label="Pause spin" title="Pause spin"><svg viewBox="0 0 12 12"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></svg></button>
+    <div id="loading">LOADING</div>
+    <div id="busy">LOADING</div>
+  </div>
+  <div class="intro-panel" id="introPanel">
+    <div class="irule"></div>
+    <h1>The Cathedral</h1>
+    <p>Choose the stone, the setting and the metal, and watch your ring take shape.</p>
+    <div class="ibtns"><button class="btn" id="bBegin" disabled>Preparing your ring</button><a class="btn ghost" href="https://dmndave.co/schedule" target="_blank" rel="noopener">Book a free consultation</a></div>
+  </div>
+  <div class="tray" id="tray">
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div class="row" id="row"><div class="body" id="body"></div><div class="cta"><button class="bk" id="bPrev">Back</button><button class="btn" id="bNext">Continue</button></div></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+
+const RING_CENTER = new THREE.Vector3(0, 2.95, 0);  // true middle of the ring (mm): it turns about this point, so it never drifts
+const focus = RING_CENTER.clone();                  // the point (model mm) the ring turns about; zooming moves it to wherever the client zooms in
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.setClearColor(0x000000, 0);
+stage.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(24, 1, 1, 1000);
+let camDist = 96; const D_MIN = 22, D_MAX = 150, D_FAR = 96;
+
+// ---------- studio environment (procedural HDR, fixed to the camera's world) ----------
+function studioEnv() {
+  const W = 1024, H = 512, f = new Float32Array(W * H * 4);
+  const D = Math.PI / 180;
+  // lights: az/el centre (deg), width/height (deg), intensity, edge softness (deg). az 90 = behind the camera.
+  const L = [
+    { az: 90,  el: 62, w: 70, h: 26, I: 3.2, s: 6 },   // big overhead key
+    { az: 90,  el: 22, w: 34, h: 12, I: 2.2, s: 4 },   // front fill bar
+    { az: 10,  el: 18, w: 10, h: 60, I: 4.0, s: 2 },   // right strip
+    { az: 170, el: 18, w: 10, h: 60, I: 4.0, s: 2 },   // left strip
+    { az: -90, el: 35, w: 50, h: 18, I: 1.6, s: 6 },   // back rim
+    { az: -35, el: 8,  w: 6,  h: 40, I: 3.0, s: 1.5 }, // rear-right edge strip
+    { az: -145,el: 8,  w: 6,  h: 40, I: 3.0, s: 1.5 }, // rear-left edge strip
+    { az: 90,  el: -20,w: 120,h: 14, I: 0.45, s: 10 }, // low bounce card
+    { az: 40,  el: 30, w: 40, h: 70, I: 1.3, s: 14 },  // big soft side panels
+    { az: 140, el: 30, w: 40, h: 70, I: 1.3, s: 14 },
+    { az: 0,   el: 82, w: 360,h: 20, I: 1.0, s: 8 },   // ceiling dome
+  ];
+  // small hard sparkle sources spread over the front half
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let k = 0; k < 26; k++) L.push({ az: 20 + rnd() * 140, el: 5 + rnd() * 70, w: 2.2, h: 2.2, I: 28 + rnd() * 30, s: 0.6 });
+  for (let k = 0; k < 10; k++) L.push({ az: -160 + rnd() * 140, el: 10 + rnd() * 50, w: 2, h: 2, I: 14, s: 0.6 });
+  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  for (let j = 0; j < H; j++) {
+    const el = ((j + 0.5) / H - 0.5) * 180;
+    for (let i = 0; i < W; i++) {
+      const az = ((i + 0.5) / W) * 360 - 180;
+      // dark studio: faint gradient, slightly lighter at the horizon
+      let v = 0.03 + 0.06 * Math.exp(-Math.pow(el / 25, 2));
+      for (const l of L) {
+        let da = az - l.az; da -= 360 * Math.round(da / 360);
+        const x = da * Math.cos(el * D), y = el - l.el;
+        const fx = 1 - ss(l.w / 2 - l.s, l.w / 2 + l.s, Math.abs(x));
+        if (fx <= 0) continue;
+        const fy = 1 - ss(l.h / 2 - l.s, l.h / 2 + l.s, Math.abs(y));
+        v += l.I * fx * fy;
+      }
+      const o = (j * W + i) * 4;
+      f[o] = v * 1.0; f[o + 1] = v * 0.99; f[o + 2] = v * 0.97; f[o + 3] = 1;
+    }
+  }
+  const h = new Uint16Array(f.length);
+  for (let k = 0; k < f.length; k++) h[k] = THREE.DataUtils.toHalfFloat(f[k]);
+  const t = new THREE.DataTexture(h, W, H, THREE.RGBAFormat, THREE.HalfFloatType);
+  t.mapping = THREE.EquirectangularReflectionMapping;
+  t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearFilter;
+  t.colorSpace = THREE.LinearSRGBColorSpace; t.needsUpdate = true;
+  return t;
+}
+const envTex = studioEnv();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromEquirectangular(envTex).texture;
+
+// ---------- ring groups ----------
+const turn = new THREE.Group();          // rotated by the client
+const ring = new THREE.Group();          // model offset so the ring turns about its centre
+ring.position.copy(RING_CENTER).negate();
+turn.add(ring); scene.add(turn);
+
+const metal = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color().setRGB(0.74, 0.72, 0.68), metalness: 1, roughness: 0.075, envMapIntensity: 1.0,
+});
+metal.onBeforeCompile = sh => addSweep(sh);
+
+// ---------- diamond: per-pixel ray tracing through the real facets ----------
+const MAXP = 224;                                        // the oval eternity band's stones have up to 217 facets
+const diaVert = /* glsl */`
+  attribute float sid;
+  varying vec3 vPos; varying float vSid;
+  void main(){ vPos = position; vSid = sid; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`;
+const diaFrag = /* glsl */`
+  precision highp float;
+  uniform sampler2D uPlanes; uniform sampler2D uEnv;
+  uniform vec3 uCam; uniform mat3 uRot; uniform vec3 uIor; uniform float uEnvI; uniform float uFire;
+  uniform vec3 uSwN; uniform float uSwI; uniform float uSwW;
+  varying vec3 vPos; varying float vSid;
+  const float PI = 3.141592653589793;
+  vec3 env(vec3 dl){                         // direction in model space -> world -> equirect
+    vec3 d = normalize(uRot * dl);
+    vec2 uv = vec2(atan(d.z, d.x) * (0.5/PI) + 0.5, asin(clamp(d.y,-1.0,1.0)) / PI + 0.5);
+    vec3 c = texture2D(uEnv, uv).rgb * uEnvI;
+    float bd = dot(d, uSwN) / uSwW; c += uSwI * 1.3 * exp(-bd * bd);   // the light sweep: a strip lamp passing over the ring
+    return c;
+  }
+  float schlick(float c, float f0){ return f0 + (1.0 - f0) * pow(1.0 - clamp(c,0.0,1.0), 5.0); }
+  void main(){
+    int s = int(vSid + 0.5);
+    int cnt = int(texelFetch(uPlanes, ivec2(0, s), 0).x + 0.5);
+    vec3 p = vPos;
+    vec3 n = normalize(cross(dFdx(vPos), dFdy(vPos)));
+    vec3 v = normalize(p - uCam);
+    if (dot(n, v) > 0.0) n = -n;
+    float eta = uIor.g;
+    float f0 = pow((eta - 1.0) / (eta + 1.0), 2.0);
+    float F = schlick(-dot(v, n), f0);
+    vec3 col = F * env(reflect(v, n));
+    vec3 dir = refract(v, n, 1.0 / eta);
+    vec3 pos = p; float thr = 1.0 - F;
+    for (int b = 0; b < 6; b++) {
+      float tmin = 1e9; vec3 nh = vec3(0.0, 1.0, 0.0);
+      for (int i = 1; i <= ${MAXP}; i++) {
+        if (i > cnt) break;
+        vec4 pl = texelFetch(uPlanes, ivec2(i, s), 0);
+        float dn = dot(dir, pl.xyz);
+        if (dn > 1e-5) { float t = (pl.w - dot(pos, pl.xyz)) / dn; if (t > 1e-5 && t < tmin) { tmin = t; nh = pl.xyz; } }
+      }
+      pos += dir * tmin;
+      float ci = dot(dir, nh);                         // cos of incidence inside
+      vec3 oG = refract(dir, -nh, eta);
+      if (dot(oG, oG) > 0.0) {                         // light escapes here: split into colours (fire)
+        float Fe = schlick(dot(oG, nh), f0);
+        vec3 oR = refract(dir, -nh, mix(eta, uIor.r, uFire));
+        vec3 oB = refract(dir, -nh, mix(eta, uIor.b, uFire));
+        vec3 e = vec3(dot(oR,oR) > 0.0 ? env(oR).r : 0.0, env(oG).g, dot(oB,oB) > 0.0 ? env(oB).b : 0.0);
+        col += thr * (1.0 - Fe) * e;
+        thr *= Fe;
+      }
+      dir = reflect(dir, -nh);
+    }
+    col += thr * env(dir);
+    gl_FragColor = vec4(col, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }`;
+// ---------- light sweep: a strip lamp passes once across the ring when the client makes a choice ----------
+const sweepU = { uSwN: { value: new THREE.Vector3(1, 0, 0) }, uSwI: { value: 0 }, uSwW: { value: 0.26 } };
+function addSweep(sh) {
+  Object.assign(sh.uniforms, sweepU);
+  sh.fragmentShader = 'uniform vec3 uSwN; uniform float uSwI; uniform float uSwW;\n' + sh.fragmentShader.replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
+    { vec3 rw = inverseTransformDirection(reflect(-geometryViewDir, normal), viewMatrix);
+      float bd = dot(rw, uSwN) / uSwW; reflectedLight.indirectSpecular += uSwI * exp(-bd * bd) * material.specularColor; }`);
+}
+const diaMat = new THREE.ShaderMaterial({
+  vertexShader: diaVert, fragmentShader: diaFrag,
+  uniforms: {
+    uPlanes: { value: null }, uEnv: { value: envTex },
+    uCam: { value: new THREE.Vector3() }, uRot: { value: new THREE.Matrix3() },
+    uIor: { value: new THREE.Vector3(2.408, 2.424, 2.451) }, uEnvI: { value: 1.0 }, uFire: { value: 2.2 },
+  },
+});
+const inv = new THREE.Matrix4();
+function bindCam(mesh) {
+  mesh.onBeforeRender = (r, s, cam) => {
+    inv.copy(mesh.matrixWorld).invert();
+    mesh.material.uniforms.uCam.value.setFromMatrixPosition(cam.matrixWorld).applyMatrix4(inv);
+    mesh.material.uniforms.uRot.value.setFromMatrix4(mesh.matrixWorld);
+  };
+}
+
+// ---------- load: every stone shape / carat is its own model, fetched the first time a client picks it ----------
+const BORE = size => (11.63 + 0.8128 * size) / 2;          // finger-hole radius (mm) for a US size; models are built at size 7
+const SIZES = []; for (let z = 3.5; z <= 10.001; z += 0.5) SIZES.push(z);
+const gltfLoader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+const loadGlb = key => fetch('v/' + key + '.json').then(r => r.json()).then(j => gltfLoader.parseAsync(Uint8Array.from(atob(j.glb), c => c.charCodeAt(0)).buffer, ''));
+const variants = {};                                        // key -> { group, parts, ready }
+const opt = { shape: 'oval', ct: '3.0', size: 7, prong: 'claw', halo: '1', metal: 'pt', pave: '0', band: 'none', engMode: 'inside', eng: '', engFont: 'script', engNote: '' };
+// length-to-width ratios: [as built, lowest, highest]. Other ratios are shown by stretching the head and stone (same carat);
+// the production CAD is built at the chosen ratio.
+const RATIOS = { oval: [1.45, 1.30, 1.55], cushion: [1.15, 1.00, 1.40], emerald: [1.40, 1.30, 1.60], radiant: [1.47, 1.30, 1.55], marquise: [2.00, 1.80, 2.20], hexagon: [1.78, 1.60, 1.95] };
+const ratio = {}; for (const k in RATIOS) ratio[k] = Math.round(RATIOS[k][0] * 20) / 20;   // offered in 0.05 steps; starts at the step nearest the built ratio
+const RX0 = 7.5, RX1 = 12.3;                                // the shoulders follow the head's width between these heights
+const METALS = {                                           // linear-light reflectance colours
+  pt: { name: 'platinum',        rgb: [0.74, 0.72, 0.68], rough: 0.075, env: 1.0 },
+  yg: { name: '14k yellow gold', rgb: [1.00, 0.74, 0.30], rough: 0.06, env: 1.45 },
+  rg: { name: '14k rose gold',   rgb: [1.00, 0.60, 0.47], rough: 0.06, env: 1.45 },
+};
+const TWO_TONE = { tt: { head: 'pt', shank: 'yg' } };           // two tone: platinum head on a 14k yellow gold shank (the wedding band and engraving follow the shank)
+const toneOf = m => TWO_TONE[m] || { head: m, shank: m };
+// the band is re-sized live: band vertices move out radially, the shoulders lift straight up with the head
+const sizeU = { uDR: { value: 0 }, uSX: { value: 1 } };
+function shankMaterial() {
+  const m = metal.clone(); m.userData.u = { uToM: { value: new THREE.Matrix4() }, uFromM: { value: new THREE.Matrix4() }, uDR: sizeU.uDR, uSX: sizeU.uSX };
+  m.onBeforeCompile = sh => {
+    addSweep(sh); Object.assign(sh.uniforms, m.userData.u);
+    sh.vertexShader = 'uniform mat4 uToM; uniform mat4 uFromM; uniform float uDR; uniform float uSX;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      { vec3 pm = (uToM * vec4(transformed, 1.0)).xyz; pm.x *= mix(1.0, uSX, smoothstep(${RX0.toFixed(2)}, ${RX1.toFixed(2)}, pm.y)); float r = max(length(pm.xy), 1e-3);
+        vec2 dir = pm.xy / r; float s = smoothstep(${(0.35 * BORE(7)).toFixed(2)}, ${(BORE(7) + 2.6).toFixed(2)}, pm.y);
+        vec2 u = normalize(mix(dir, vec2(0.0, 1.0), s));
+        pm.xy += uDR * u - vec2(0.0, uDR);
+        transformed = (uFromM * vec4(pm, 1.0)).xyz; }`);
+  };
+  return m;
+}
+const tmpM = new THREE.Matrix4();
+const SM0 = 0.35 * BORE(7), SM1 = BORE(7) + 2.6;
+function morphOffset(c0, dR, sx) {                          // same move as the shader, for one point (model mm)
+  let w = Math.min(1, Math.max(0, (c0[1] - RX0) / (RX1 - RX0))); w = w * w * (3 - 2 * w);
+  const c = [c0[0] * (1 + w * (sx - 1)), c0[1]], ex = c[0] - c0[0];
+  const r = Math.max(Math.hypot(c[0], c[1]), 1e-3); let ux = c[0] / r, uy = c[1] / r;
+  let t = Math.min(1, Math.max(0, (c[1] - SM0) / (SM1 - SM0))); t = t * t * (3 - 2 * t);
+  ux = ux * (1 - t); uy = uy * (1 - t) + t; const l = Math.hypot(ux, uy); return [ex + dR * ux / l, dR * uy / l - dR];
+}
+function morphable(o, V) {                                   // give a band mesh its own re-sizing material
+  const sm = shankMaterial(); o.material = sm; (V.morphMats = V.morphMats || []).push(sm);
+  o.onBeforeRender = () => { tmpM.copy(V.group.matrixWorld).invert().multiply(o.matrixWorld); sm.userData.u.uToM.value.copy(tmpM); sm.userData.u.uFromM.value.copy(tmpM).invert(); };
+}
+function prepHalo(V) {                                     // halo stones: centre and along-the-wire neighbours, so each can ride the stretched wire
+  const P = V.parts.pave; if (!P) return;
+  const pos = P.userData.pos0, sid = P.geometry.getAttribute('sid').array, box = new Map();
+  for (let j = 0; j < sid.length; j++) {
+    const k = Math.round(sid[j]); let b = box.get(k); if (!b) box.set(k, b = [1e9, 1e9, 1e9, -1e9, -1e9, -1e9]);
+    for (let a = 0; a < 3; a++) { const v = pos[j * 3 + a]; if (v < b[a]) b[a] = v; if (v > b[a + 3]) b[a + 3] = v; }
+  }
+  const st = [...box].map(([k, b]) => ({ k, c: [(b[0] + b[3]) / 2, (b[1] + b[4]) / 2, (b[2] + b[5]) / 2] }));
+  st.sort((a, b) => Math.atan2(a.c[0], a.c[2]) - Math.atan2(b.c[0], b.c[2]));
+  st.forEach((x, i) => { x.prev = st[(i + st.length - 1) % st.length].c; x.next = st[(i + 1) % st.length].c; });
+  V.halo = new Map(st.map(x => [x.k, x]));
+}
+function applyRatio(V, sx, sz) {                           // stretch the head (metal and stones) to another length-to-width ratio
+  if (V.rx[0] === sx && V.rx[1] === sz) return; V.rx = [sx, sz];
+  V.headG.scale.set(sx, 1, sz);
+  const { data, data0, W, pt } = V.planes;
+  const plane = (k, f) => { const cnt = Math.round(data0[k * W * 4]); for (let i = 1; i <= cnt; i++) { const o = (k * W + i) * 4; f(data0.subarray(o, o + 4), data.subarray(o, o + 4)); } };
+  const S = V.parts.stone, sp = S.geometry.getAttribute('position'), s0 = S.userData.pos0;
+  for (let j = 0; j < s0.length; j += 3) { sp.array[j] = s0[j] * sx; sp.array[j + 1] = s0[j + 1]; sp.array[j + 2] = s0[j + 2] * sz; }
+  for (const k of new Set(Array.from(S.geometry.getAttribute('sid').array, Math.round)))
+    plane(k, (a, b) => { const m = [a[0] / sx, a[1], a[2] / sz], l = Math.hypot(...m); b[0] = m[0] / l; b[1] = m[1] / l; b[2] = m[2] / l; b[3] = a[3] / l; });
+  sp.needsUpdate = true; S.geometry.computeBoundingSphere();
+  if (V.halo) {
+    for (const h of V.halo.values()) {
+      const dx = h.next[0] - h.prev[0], dz = h.next[2] - h.prev[2];
+      h.t = Math.hypot(sx * dx, sz * dz) / Math.max(Math.hypot(dx, dz), 1e-6);
+      h.o = [sx * h.c[0] - h.t * h.c[0], h.c[1] - h.t * h.c[1], sz * h.c[2] - h.t * h.c[2]];
+      plane(h.k, (a, b) => { b[0] = a[0]; b[1] = a[1]; b[2] = a[2]; b[3] = h.t * a[3] + a[0] * h.o[0] + a[1] * h.o[1] + a[2] * h.o[2]; });
+    }
+    const P = V.parts.pave, pp = P.geometry.getAttribute('position'), p0 = P.userData.pos0, sid = P.geometry.getAttribute('sid').array;
+    for (let j = 0; j < sid.length; j++) { const h = V.halo.get(Math.round(sid[j])); for (let a = 0; a < 3; a++) pp.array[j * 3 + a] = h.t * p0[j * 3 + a] + h.o[a]; }
+    pp.needsUpdate = true; P.geometry.computeBoundingSphere();
+  }
+  pt.needsUpdate = true;
+}
+const b64 = (s, T) => { const b = Uint8Array.from(atob(s), c => c.charCodeAt(0)); return new T(b.buffer); };
+function unpackDia(dia) {                                   // diamond meshes come packed as base64 binary (float32 positions, uint16 stone ids)
+  for (const m of Object.values(dia.meshes)) if (typeof m.pos === 'string') { m.pos = b64(m.pos, Float32Array); m.sid = Float32Array.from(b64(m.sid, Uint16Array)); }
+  return dia;
+}
+// quietly fetch what the client is likely to pick next: the other shapes at this carat, and the carats either side of this one
+let prefetchQ = [], prefetching = false;
+function queuePrefetch() {
+  if (!MAN) return; const keys = [];
+  const cts = MAN.shapes[opt.shape].cts, i = cts.indexOf(opt.ct);
+  for (const j of [i + 1, i - 1]) if (cts[j]) keys.push(opt.shape + '_' + cts[j]);
+  for (const s in MAN.shapes) { const c = MAN.shapes[s].cts; keys.push(s + '_' + (c.includes(opt.ct) ? opt.ct : c.includes('3.0') ? '3.0' : c[0])); }
+  prefetchQ = keys.filter(k => !variants[k]); if (!prefetching) pump();
+}
+function pump() {
+  const k = prefetchQ.shift(); if (!k) { prefetching = false; return; } prefetching = true;
+  const go = () => loadVariant(k).catch(() => {}).then(() => setTimeout(pump, 30));
+  if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 300 }); else setTimeout(go, 50);   // the render loop keeps the page busy: don't wait for true idle
+}
+function loadVariant(key) {
+  if (variants[key]) return variants[key].ready;
+  const V = variants[key] = { group: new THREE.Group(), parts: {} };
+  V.group.visible = false; ring.add(V.group);
+  V.ready = Promise.all([loadGlb(key), fetch('v/d_' + key + '.json').then(r => r.json()).then(unpackDia)]).then(([gltf, dia]) => {
+    gltf.scene.traverse(o => { if (o.isMesh) o.material = metal; });
+    for (const k of ['shank', 'head_solid', 'head_seats', 'claws', 'beadprongs', 'beads', 'shank_pave', 'bbeads']) V.parts[k] = gltf.scene.getObjectByName(k);
+    for (const k of ['shank', 'shank_pave', 'bbeads']) if (V.parts[k]) V.parts[k].traverse(o => { if (o.isMesh) morphable(o, V); });
+    V.group.add(gltf.scene);
+    gltf.scene.updateMatrixWorld(true); V.headG = new THREE.Group(); gltf.scene.add(V.headG);
+    for (const k of ['head_solid', 'head_seats', 'claws', 'beadprongs', 'beads']) if (V.parts[k]) V.headG.attach(V.parts[k]);
+    const W = MAXP + 1, Hh = dia.stones.length, data = new Float32Array(W * Hh * 4);
+    dia.stones.forEach((st, r) => { data[(r * W) * 4] = st.p.length; st.p.forEach((pl, i) => data.set(pl, (r * W + i + 1) * 4)); });
+    const pt = new THREE.DataTexture(data, W, Hh, THREE.RGBAFormat, THREE.FloatType);
+    pt.magFilter = pt.minFilter = THREE.NearestFilter; pt.needsUpdate = true;
+    const dm = diaMat.clone(); dm.uniforms.uPlanes.value = pt; dm.uniforms.uEnv.value = envTex; Object.assign(dm.uniforms, sweepU);
+    V.planes = { data, data0: data.slice(), W, pt, rows: {} }; V.rx = [1, 1];
+    for (const k of ['stone', 'pave']) {
+      const src = dia.meshes[k], g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(src.pos, 3));
+      g.setAttribute('sid', new THREE.Float32BufferAttribute(src.sid, 1));
+      const m = new THREE.Mesh(g, dm); bindCam(m); V.group.add(m); V.parts[k] = m;
+      m.userData.pos0 = Float32Array.from(src.pos);
+    }
+    prepHalo(V);
+    if (dia.meshes.bpave) {                                 // shoulder pave: one mesh per stone so each can follow the band when it is re-sized
+      const src = dia.meshes.bpave, per = src.sid.length / src.centres.length; V.bstones = [];
+      V.parts.bpave = new THREE.Group(); V.group.add(V.parts.bpave);
+      src.centres.forEach((c, i) => {
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(src.pos.slice(i * per * 3, (i + 1) * per * 3), 3));
+        g.setAttribute('sid', new THREE.Float32BufferAttribute(src.sid.slice(i * per, (i + 1) * per), 1));
+        const m = new THREE.Mesh(g, dm); bindCam(m); V.parts.bpave.add(m); V.bstones.push({ m, c });
+      });
+    }
+    return V;
+  });
+  return V.ready;
+}
+let MAN = null, shown = null;
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
+let introOn = true, sweepWant = false, metalGoal = null, headGoal = null; const T_OPEN = performance.now();
+const metalCur = { c: new THREE.Color(), r: 0.075, e: 1 }, headCur = { c: new THREE.Color(), r: 0.075, e: 1 };   // shank tone, head tone
+const bandMetal = metal.clone();                              // the wedding band, in the shank's metal
+function applyMetal() {
+  const put = (mat, C) => { mat.color.copy(C.c); mat.roughness = C.r; mat.envMapIntensity = C.e; };
+  put(metal, headCur); put(bandMetal, metalCur); for (const mat of Object.values(variants).flatMap(v => v.morphMats || [])) put(mat, metalCur);
+}
+const variantOpts = () => null;                               // design-review options are retired in the client builder
+const keyOf = () => opt.shape + '_' + opt.ct;
+const $ = id => document.getElementById(id);
+
+// ---------- stone outline icons (drawn, so every ratio gets its own true silhouette) ----------
+function shapePath(sh, cx, cy, w, h) {
+  const x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - h / 2, y1 = cy + h / 2, f = n => n.toFixed(2);
+  const poly = pts => 'M' + pts.map(p => f(p[0]) + ' ' + f(p[1])).join('L') + 'Z';
+  if (sh === 'round' || sh === 'oval') return `M${f(cx)} ${f(y0)}A${f(w / 2)} ${f(h / 2)} 0 1 1 ${f(cx)} ${f(y1)}A${f(w / 2)} ${f(h / 2)} 0 1 1 ${f(cx)} ${f(y0)}Z`;
+  if (sh === 'cushion') { const r = Math.min(w, h) * 0.34; return `M${f(x0 + r)} ${f(y0)}H${f(x1 - r)}Q${f(x1)} ${f(y0)} ${f(x1)} ${f(y0 + r)}V${f(y1 - r)}Q${f(x1)} ${f(y1)} ${f(x1 - r)} ${f(y1)}H${f(x0 + r)}Q${f(x0)} ${f(y1)} ${f(x0)} ${f(y1 - r)}V${f(y0 + r)}Q${f(x0)} ${f(y0)} ${f(x0 + r)} ${f(y0)}Z`; }
+  if (sh === 'emerald' || sh === 'radiant') { const c = Math.min(w, h) * (sh === 'emerald' ? 0.24 : 0.14); return poly([[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]]); }
+  if (sh === 'marquise') { const R = (h * h / 4 + w * w / 4) / w; return `M${f(cx)} ${f(y0)}A${f(R)} ${f(R)} 0 0 1 ${f(cx)} ${f(y1)}A${f(R)} ${f(R)} 0 0 1 ${f(cx)} ${f(y0)}Z`; }
+  if (sh === 'hexagon') { const k = h * 0.25; return poly([[cx, y0], [x1, y0 + k], [x1, y1 - k], [cx, y1], [x0, y1 - k], [x0, y0 + k]]); }
+  return '';
+}
+const shapeIcon = (sh, r) => { const h = 26, w = sh === 'round' ? 26 : h / r; return `<svg viewBox="0 0 36 36" aria-hidden="true"><path d="${shapePath(sh, 18, 18, w, h)}"/></svg>`; };
+const ratioOf = sh => RATIOS[sh] ? ratio[sh] : 1;
+const DEF_R = { round: 1, oval: 1.45, cushion: 1.15, emerald: 1.40, radiant: 1.47, marquise: 2.0, hexagon: 1.78 };
+
+// ---------- engraving inside the band ----------
+const ENG_FONTS = {
+  script: { name: 'Script', family: '"Pinyon Script", cursive', style: 'normal', weight: 400 },
+  roman:  { name: 'Roman', family: 'Cinzel, serif', style: 'normal', weight: 500, upper: true },
+  italic: { name: 'Italic', family: '"Cormorant Garamond", serif', style: 'italic', weight: 500 },
+  modern: { name: 'Modern', family: 'Jost, sans-serif', style: 'normal', weight: 400 },
+};
+const D2R = Math.PI / 180;
+const ENG_T0 = -60 * D2R, ENG_T1 = 50 * D2R;   // usable arc on the right side: clear of the bottom (resizing, 30 deg each way) and the top (head joint, 40 deg each way)
+const ENG_H = 0.65, ENG_HMIN = 0.5;                // letter height as a share of the band width; long text may shrink to the minimum
+const ENG_TC = (ENG_T0 + ENG_T1) / 2;
+const fontStr = (f, px) => `${f.style} ${f.weight} ${px}px ${f.family}`;
+const engStr = () => { const f = ENG_FONTS[opt.engFont]; const t = opt.eng.trim(); return f.upper ? t.toUpperCase() : t; };
+function engText() {
+  if (opt.engMode === 'none') return '';
+  if (opt.engMode === 'custom') return 'Custom request' + (opt.engNote.trim() ? ': ' + opt.engNote.trim() : ', to discuss');
+  const t = opt.eng.trim(); return t ? `"${t}" in ${ENG_FONTS[opt.engFont].name.toLowerCase()} lettering, inside the band` : '';
+}
+function engFrame(V) {                               // band width and inside profile, read off the band model (size 7, model mm)
+  const inv = new THREE.Matrix4(); V.group.updateMatrixWorld(true); inv.copy(V.group.matrixWorld).invert();
+  const B7 = BORE(7), v = new THREE.Vector3(), rel = new THREE.Matrix4(); let zmin = 1e9, zmax = -1e9; const pts = [];
+  V.parts.shank.traverse(o => {
+    if (!o.isMesh) return; rel.multiplyMatrices(inv, o.matrixWorld); const pa = o.geometry.attributes.position;
+    for (let i = 0; i < pa.count; i++) {
+      v.fromBufferAttribute(pa, i).applyMatrix4(rel); const r = Math.hypot(v.x, v.y), t = Math.atan2(v.y, v.x);
+      if (t > ENG_T0 && t < 0 && r < B7 + 2.3) { zmin = Math.min(zmin, v.z); zmax = Math.max(zmax, v.z); }
+      if (t > ENG_T0 && t < ENG_T1 && r < B7 + 0.6) pts.push([v.z, r]);
+    }
+  });
+  const W = zmax - zmin, zc = (zmin + zmax) / 2, NB = 48, bins = new Array(NB).fill(1e9);
+  for (const [z, r] of pts) { const k = Math.floor((z - zmin) / W * NB); if (k >= 0 && k < NB) bins[k] = Math.min(bins[k], r); }
+  const known = bins.map((r, k) => [zmin + (k + 0.5) / NB * W, r]).filter(q => q[1] < 1e8);
+  const prof = z => { if (!known.length) return B7; let a = known[0], b = known[known.length - 1];
+    if (z <= a[0]) return a[1]; if (z >= b[0]) return b[1];
+    for (let k = 0; k < known.length - 1; k++) if (known[k][0] <= z && known[k + 1][0] >= z) { a = known[k]; b = known[k + 1]; break; }
+    if (b[0] === a[0]) return a[1]; const u = THREE.MathUtils.clamp((z - a[0]) / (b[0] - a[0]), 0, 1); return a[1] + (b[1] - a[1]) * u; };
+  return { W, zc, prof, r0: prof(zc) };
+}
+const engCv = document.createElement('canvas'), engCx = engCv.getContext('2d');
+let engMesh = null, engKey = '', engInfo = { fits: true, h: 0, len: 0, zone: 1 };
+const engMat = (() => {                              // engraved metal: darker satin grooves; follows the live resize like the band
+  const m = shankMaterial(); m.transparent = true; m.depthWrite = false; m.side = THREE.DoubleSide; m.roughness = 0.42; return m;
+})();
+function engMeasure(V, txt) {
+  const F = V.engF || (V.engF = engFrame(V)), f = ENG_FONTS[opt.engFont];
+  engCx.font = fontStr(f, 200); const m = engCx.measureText(txt);
+  const asc = m.actualBoundingBoxAscent, desc = m.actualBoundingBoxDescent, wpx = m.actualBoundingBoxLeft + m.actualBoundingBoxRight, hpx = Math.max(1, asc + desc);
+  const zone = F.r0 * (ENG_T1 - ENG_T0) - 1.2;
+  let h = ENG_H * F.W, len = wpx / hpx * h;
+  if (len > zone) { h = Math.max(ENG_HMIN * F.W, h * zone / len); len = wpx / hpx * h; }
+  return { F, f, m, asc, desc, wpx, hpx, h, len, zone, fits: len <= zone + 1e-6 };
+}
+function engCount() {
+  const el = $('engLeft'); if (!el) return; const V = variants[keyOf()]; const txt = engStr();
+  if (!V || !V.parts.shank || !txt) { el.textContent = ''; return; }
+  const q = engMeasure(V, txt); el.textContent = q.fits ? (q.h < ENG_H * q.F.W - 1e-6 ? 'Fits, slightly smaller lettering' : 'Fits') : 'Too long for this ring';
+  el.style.color = q.fits ? '' : 'var(--gold2)';
+}
+function buildEngraving() {
+  const V = variants[keyOf()]; const txt = engStr();
+  const key = [keyOf(), txt, opt.engFont, opt.engMode, !!(V && V.parts.shank)].join('|'); if (key === engKey) return; engKey = key;
+  if (engMesh) { engMesh.parent && engMesh.parent.remove(engMesh); engMesh.geometry.dispose(); engMesh = null; }
+  if (!V || !V.parts.shank || opt.engMode !== 'inside' || !txt) return;
+  const f = ENG_FONTS[opt.engFont];
+  document.fonts.load(fontStr(f, 64), txt).then(() => {
+    if (key !== engKey) return;
+    const q = engMeasure(V, txt); engInfo = q; engCount();
+    if (!q.fits) return;                              // never draw letters past the safe zone
+    const pad = 0.18 * q.h, Larc = q.len + 2 * pad, Hz = q.h + 2 * pad, dT = Larc / q.F.r0;
+    const ppm = Math.min(2048 / Larc, 220); engCv.width = Math.ceil(Larc * ppm); engCv.height = Math.ceil(Hz * ppm);
+    const px = 200 * q.h * ppm / q.hpx; engCx.font = fontStr(f, px);
+    engCx.fillStyle = '#000'; engCx.fillRect(0, 0, engCv.width, engCv.height); engCx.fillStyle = '#fff'; engCx.textBaseline = 'alphabetic';
+    const k = px / 200; engCx.fillText(txt, pad * ppm + q.m.actualBoundingBoxLeft * k, pad * ppm + q.asc * k);
+    engSurface(engCv, Math.max(2, Math.round(ENG_WALL * ppm)));
+    const NU = 72, NV = 6, pos = [], uv = [], idx = [];
+    for (let j = 0; j <= NV; j++) for (let i = 0; i <= NU; i++) {
+      const u = i / NU, w = j / NV, t = ENG_TC + (u - 0.5) * dT * ENG_DIR, z = q.F.zc + (w - 0.5) * Hz * ENG_UP, r = q.F.prof(z) - 0.012;
+      pos.push(r * Math.cos(t), r * Math.sin(t), z); uv.push(u, w);
+    }
+    for (let j = 0; j < NV; j++) for (let i = 0; i < NU; i++) { const a = j * (NU + 1) + i, b = a + 1, c = a + NU + 1, d = c + 1; idx.push(a, b, d, a, d, c); }
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+    engMesh = new THREE.Mesh(g, engMat); engMesh.renderOrder = 2;
+    engMesh.onBeforeRender = () => { tmpM.copy(V.group.matrixWorld).invert().multiply(engMesh.matrixWorld); engMat.userData.u.uToM.value.copy(tmpM); engMat.userData.u.uFromM.value.copy(tmpM).invert(); };
+    V.group.add(engMesh);
+  });
+}
+// cut letters: a height map from the lettering gives sloped walls (normal map) that catch the light, a darker satin floor, and polished edges
+const ENG_WALL = 0.07;                                 // mm of sloped wall each side of a stroke
+function boxBlur(src, w, h, r) {                       // two passes of a separable box blur
+  let a = Float32Array.from(src), b = new Float32Array(w * h);
+  for (let pass = 0; pass < 2; pass++) {
+    for (let y = 0; y < h; y++) { let acc = 0; const o = y * w; for (let x = -r; x <= r; x++) acc += a[o + Math.min(w - 1, Math.max(0, x))];
+      for (let x = 0; x < w; x++) { b[o + x] = acc / (2 * r + 1); acc += a[o + Math.min(w - 1, x + r + 1)] - a[o + Math.max(0, x - r)]; } }
+    for (let x = 0; x < w; x++) { let acc = 0; for (let y = -r; y <= r; y++) acc += b[Math.min(h - 1, Math.max(0, y)) * w + x];
+      for (let y = 0; y < h; y++) { a[y * w + x] = acc / (2 * r + 1); acc += b[Math.min(h - 1, y + r + 1) * w + x] - b[Math.max(0, y - r) * w + x]; } }
+  }
+  return a;
+}
+const engCanv = () => { const c = document.createElement('canvas'); return [c, c.getContext('2d')]; };
+const [engAC, engAX] = engCanv(), [engNC, engNX] = engCanv(), [engCC, engCX] = engCanv(), [engRC, engRX] = engCanv();
+function engSurface(src, wall) {
+  const w = src.width, h = src.height, px = engCx.getImageData(0, 0, w, h).data, M = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) M[i] = px[4 * i + 1] / 255;
+  const H = boxBlur(M, w, h, Math.max(1, Math.round(wall / 2)));           // depth: 1 on the floor of a stroke, sloping to 0 over the wall
+  for (const [c] of [[engAC], [engNC], [engCC], [engRC]]) { c.width = w; c.height = h; }
+  const A = engAX.createImageData(w, h), N = engNX.createImageData(w, h), C = engCX.createImageData(w, h), R = engRX.createImageData(w, h);
+  const k = 2.2 * wall;                                 // wall steepness in the normal map
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x, hx = (H[i + (x < w - 1 ? 1 : 0)] - H[i - (x > 0 ? 1 : 0)]) * 0.5, hy = (H[i + (y < h - 1 ? w : 0)] - H[i - (y > 0 ? w : 0)]) * 0.5;
+    let nx = hx * k, ny = -hy * k, nz = 1; const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
+    const o = 4 * i, d = Math.min(1, H[i] * 1.15), f = Math.min(1, M[i]);
+    N.data[o] = (nx * 0.5 + 0.5) * 255; N.data[o + 1] = (ny * 0.5 + 0.5) * 255; N.data[o + 2] = (nz * 0.5 + 0.5) * 255; N.data[o + 3] = 255;
+    const a = Math.min(1, H[i] * 5 + M[i]); A.data[o] = A.data[o + 1] = A.data[o + 2] = a * 255; A.data[o + 3] = 255;
+    const c = 255 * (1 - 0.72 * d * f); C.data[o] = C.data[o + 1] = C.data[o + 2] = c; C.data[o + 3] = 255;   // floor much darker than the polished band
+    R.data[o] = 0; R.data[o + 1] = 255 * (0.16 + 0.5 * d * f); R.data[o + 2] = 0; R.data[o + 3] = 255;        // satin floor, polished walls
+  }
+  engAX.putImageData(A, 0, 0); engNX.putImageData(N, 0, 0); engCX.putImageData(C, 0, 0); engRX.putImageData(R, 0, 0);
+  const T = (c, srgb) => { const t = new THREE.CanvasTexture(c); t.anisotropy = renderer.capabilities.getMaxAnisotropy(); if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; };
+  for (const k2 of ['alphaMap', 'normalMap', 'map', 'roughnessMap']) if (engMat[k2]) engMat[k2].dispose();
+  engMat.alphaMap = T(engAC); engMat.normalMap = T(engNC); engMat.map = T(engCC, true); engMat.roughnessMap = T(engRC);
+  engMat.roughness = 1; engMat.normalScale.set(ENG_NS, ENG_NS); engMat.needsUpdate = true;
+}
+let ENG_NS = 1.6;
+let ENG_DIR = 1, ENG_UP = -1;                       // which way the text runs round the band and which way its letters face (set so it reads in the inside view)
+
+// ---------- the DMND Ave ring box: shown at the end, the lid opens on the client's ring ----------
+// sizes in mm, from the packaging spec (the paper box is 63 x 53 x 43 inside) and the photos: an octagonal flocked box,
+// lid taller than the base, a raised panel on the lid, a beige lining with the stacked logo in gold foil, two cushion rolls with the ring slit
+const BOX = { W: 60, D: 50, C: 12.5, HB: 15, HL: 26, T: 2.6, RIM: -3.0, OPEN: 104 * Math.PI / 180 };
+const boxG = new THREE.Group(); boxG.visible = false; ring.add(boxG);
+let boxAnim = null, lidAng = 0;
+function octShape(w, d, c, P = THREE.Shape) {
+  const a = w / 2, b = d / 2, s = new P();
+  s.moveTo(-a + c, -b); s.lineTo(a - c, -b); s.lineTo(a, -b + c); s.lineTo(a, b - c); s.lineTo(a - c, b); s.lineTo(-a + c, b); s.lineTo(-a, b - c); s.lineTo(-a, -b + c); s.lineTo(-a + c, -b);
+  return s;
+}
+function octPrism(w, d, c, h, bev, hole) {          // extruded upward from y=0 to y=h, edges rounded by bev
+  const sh = octShape(w - 2 * bev, d - 2 * bev, Math.max(0.5, c - bev * 0.83));
+  if (hole) sh.holes.push(octShape(hole[0] - 2 * bev, hole[1] - 2 * bev, Math.max(0.5, hole[2] - bev * 0.83), THREE.Path));   // the bevel grows holes, so start them smaller
+  const g = new THREE.ExtrudeGeometry(sh, { depth: Math.max(0.01, h - 2 * bev), bevelEnabled: bev > 0, bevelThickness: bev, bevelSize: bev, bevelSegments: 4, curveSegments: 1 });
+  g.rotateX(-Math.PI / 2); g.translate(0, bev, 0); return g;
+}
+const flockTex = (() => {                            // pebbly flock: three octaves of smooth noise -> normal map, tiled every 9 mm
+  const N = 256, H = new Float32Array(N * N);
+  const oct = (n, amp, seed) => { let r = seed; const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647; const g = Array.from({ length: n * n }, rnd);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const fx = x / N * n, fy = y / N * n, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+      const v = (i, j) => g[((j % n) * n) + (i % n)], sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+      H[y * N + x] += amp * ((v(x0, y0) * (1 - sx) + v(x0 + 1, y0) * sx) * (1 - sy) + (v(x0, y0 + 1) * (1 - sx) + v(x0 + 1, y0 + 1) * sx) * sy); } };
+  oct(12, 1.0, 7); oct(28, 0.55, 11); oct(64, 0.3, 13);
+  const c = document.createElement('canvas'); c.width = c.height = N; const cx = c.getContext('2d'), im = cx.createImageData(N, N), k = 3.2;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const hx = H[y * N + (x + 1) % N] - H[y * N + (x + N - 1) % N], hy = H[((y + 1) % N) * N + x] - H[((y + N - 1) % N) * N + x];
+    let nx = -hx * k, ny = hy * k, nz = 1; const l = Math.hypot(nx, ny, nz), o = 4 * (y * N + x);
+    im.data[o] = (nx / l * 0.5 + 0.5) * 255; im.data[o + 1] = (ny / l * 0.5 + 0.5) * 255; im.data[o + 2] = (nz / l * 0.5 + 0.5) * 255; im.data[o + 3] = 255;
+  }
+  cx.putImageData(im, 0, 0); const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1 / 5.5, 1 / 5.5); return t;
+})();
+const flock = (hex, sheen) => new THREE.MeshPhysicalMaterial({ color: new THREE.Color(hex), roughness: 0.94, metalness: 0, sheen: 1, sheenRoughness: 0.5, sheenColor: new THREE.Color(sheen),
+  normalMap: flockTex, normalScale: new THREE.Vector2(0.38, 0.38), envMapIntensity: 0.85 });
+const MAT_OUT = flock('#D9D0C1', '#FFF8EC'), MAT_IN = flock('#D8C4A6', '#FFF1DC'), MAT_CUSH = flock('#CDB898', '#F6E7CF');
+function buildBox() {
+  const { W, D, C, HB, HL, T, RIM } = BOX, Wi = W - 2 * T, Di = D - 2 * T, Ci = C - T * 0.414, add = (g, m, par = boxG) => { const o = new THREE.Mesh(g, m); par.add(o); return o; };
+  // base walls and floor
+  add(octPrism(W, D, C, HB, 1.8, [Wi, Di, Ci]), MAT_OUT).position.y = RIM - HB;
+  add(octPrism(W - 0.2, D - 0.2, C, 1.2, 0.4), MAT_OUT).position.y = RIM - HB;
+  // cushion insert: two rolls with the ring slit between them, fitted to the octagon
+  const NX = 48, NZ = 120, pos = [], uv = [], idx = [], hw = z => Wi / 2 + 0.4 - Math.max(0, Math.abs(z) - (Di / 2 - Ci));
+  const top = RIM - 0.5, base = RIM - 9.5, slit = 0.0, zf = Di / 2 + 0.4, zb = -Di / 2 + 4.5;     // back roll stops at the back flap
+  const roll = (t) => Math.pow(Math.max(0, 1 - Math.pow(Math.abs(t), 3.2)), 0.42);
+  for (let j = 0; j <= NZ; j++) {
+    const z = zb + (zf - zb) * j / NZ, inFront = z > slit, t = inFront ? ((z - slit) / (zf - slit)) * 2 - 1 : ((z - zb) / (slit - zb)) * 2 - 1;
+    const hz = roll(t);
+    for (let i = 0; i <= NX; i++) { const u = i / NX, x = (u * 2 - 1) * hw(z), ex = Math.pow(Math.max(0, 1 - Math.pow(Math.abs(x) / (Wi / 2), 8)), 0.3);
+      pos.push(x, base + (top - base) * hz * (0.93 + 0.07 * ex), z); uv.push(x, z); }
+  }
+  for (let j = 0; j < NZ; j++) for (let i = 0; i < NX; i++) { const a = j * (NX + 1) + i, b = a + 1, c2 = a + NX + 1, d2 = c2 + 1; idx.push(a, c2, b, b, c2, d2); }
+  const gi = new THREE.BufferGeometry(); gi.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); gi.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); gi.setIndex(idx); gi.computeVertexNormals();
+  add(gi, MAT_CUSH);
+  const cg = new THREE.PlaneGeometry(Wi - 2, 4.2); cg.translate(0, base + 2.1, slit);   // the dark crease of the slit
+  add(cg, new THREE.MeshBasicMaterial({ color: new THREE.Color('#2B241B'), side: THREE.DoubleSide }));
+  // padded back flap, standing at the hinge
+  const fl = new THREE.Shape(); { const w = Wi - 10, h = 12, r = 3; fl.moveTo(-w / 2 + r, 0); fl.lineTo(w / 2 - r, 0); fl.quadraticCurveTo(w / 2, 0, w / 2, r); fl.lineTo(w / 2, h - r); fl.quadraticCurveTo(w / 2, h, w / 2 - r, h); fl.lineTo(-w / 2 + r, h); fl.quadraticCurveTo(-w / 2, h, -w / 2, h - r); fl.lineTo(-w / 2, r); fl.quadraticCurveTo(-w / 2, 0, -w / 2 + r, 0); }
+  const gf = new THREE.ExtrudeGeometry(fl, { depth: 1.6, bevelEnabled: true, bevelThickness: 0.9, bevelSize: 0.9, bevelSegments: 4, curveSegments: 6 });
+  const flap = add(gf, MAT_IN); flap.position.set(0, RIM - 6, -Di / 2 + 1.2); flap.rotation.x = -0.12;
+  // lid, hinged at the back edge of the base
+  const pivot = new THREE.Group(); pivot.position.set(0, RIM, -D / 2); boxG.add(pivot); boxG.userData.pivot = pivot;
+  const L = new THREE.Group(); L.position.set(0, -RIM, D / 2); pivot.add(L);
+  add(octPrism(W, D, C, HL - 3, 1.8, [Wi, Di, Ci]), MAT_OUT, L).position.y = RIM + 0.35;
+  add(octPrism(W, D, C, 3.4, 1.8), MAT_OUT, L).position.y = RIM + HL - 3.4;
+  add(octPrism(W - 9, D - 9, C - 3.7, 1.6, 0.75), MAT_OUT, L).position.y = RIM + HL - 0.6;      // raised panel on top
+  add(octPrism(Wi - 0.4, Di - 0.4, Ci, 3.2, 1.2), MAT_IN, L).position.y = RIM + HL - 3.4 - 3.0;  // padded lining
+  // gold-foil logo on the lining, reading upright when the lid is open
+  const lt = new THREE.TextureLoader().load('img/logo_stacked_mask.png'); lt.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const lw = 30, lg = new THREE.PlaneGeometry(lw, lw * 613 / 1088); lg.rotateX(Math.PI / 2);
+  const foil = new THREE.MeshStandardMaterial({ color: new THREE.Color('#E8BE52'), metalness: 1, roughness: 0.16, alphaMap: lt, transparent: true, depthWrite: false, envMapIntensity: 2.2 });
+  const logo = add(lg, foil, L); logo.position.set(0, RIM + HL - 3.4 - 3.0 - 0.06, 3.0); logo.renderOrder = 3;
+  // soft shadow on the velvet
+  const sc = document.createElement('canvas'); sc.width = sc.height = 128; { const g2 = sc.getContext('2d'), r2 = g2.createRadialGradient(64, 64, 10, 64, 64, 64); r2.addColorStop(0, 'rgba(0,0,0,0.62)'); r2.addColorStop(0.55, 'rgba(0,0,0,0.30)'); r2.addColorStop(1, 'rgba(0,0,0,0)'); g2.fillStyle = r2; g2.fillRect(0, 0, 128, 128); }
+  const sg = new THREE.PlaneGeometry(W * 1.9, D * 1.9); sg.rotateX(-Math.PI / 2);
+  add(sg, new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sc), transparent: true, depthWrite: false, toneMapped: false })).position.y = RIM - HB - 0.05;
+}
+buildBox();
+function showBox(on) {
+  if (on && !boxG.visible) { boxG.visible = true; lidAng = 0; boxG.userData.pivot.rotation.x = 0; boxAnim = { t0: performance.now() + (RM.matches ? 0 : 700), ms: RM.matches ? 1 : 2200 }; }
+  if (!on) { boxG.visible = false; boxAnim = null; }
+}
+function tickBox(now) {
+  if (!boxAnim) return; const t = THREE.MathUtils.clamp((now - boxAnim.t0) / boxAnim.ms, 0, 1); const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  lidAng = BOX.OPEN * e; boxG.userData.pivot.rotation.x = -lidAng; if (t >= 1) boxAnim = null;
+}
+
+// ---------- a wedding band to pair with the ring ----------
+// built at US 5 (bore radius 7.85 mm); shown at the client's size by widening the metal and moving each stone out with it.
+// It sits against the widest part of the ring in the band's zone (the head), so a straight band shows its true gap at the base.
+const BANDS = {
+  oval53: { name: 'Oval eternity band', note: '21 oval diamonds, 5 × 3 mm, set all the way round', bore: 8.66 },   // real CAD, built at US 7
+};
+let bandV = null; const bandClear = {}, bands = {};
+function loadBand(key) {
+  if (bands[key]) { bandV = bands[key]; return bandV.ready; }
+  const B = bandV = bands[key] = { key, group: new THREE.Group(), stones: [] }; B.group.visible = false; ring.add(B.group);
+  B.ready = Promise.all([loadGlb('band_' + key), fetch('v/d_band_' + key + '.json').then(r => r.json()).then(unpackDia)]).then(([gltf, dia]) => {
+    B.prof = new Float32Array(200).fill(-1);               // the band's half-width at each radius (0.1 mm bins, as built)
+    const addProf = (pa) => { for (let i = 0; i < pa.length; i += 3) { const b = Math.floor(Math.hypot(pa[i], pa[i + 1]) * 10), z = Math.abs(pa[i + 2]); if (b < 200 && z > B.prof[b]) B.prof[b] = z; } };
+    B.meshes = [];
+    B.metal = new THREE.Group(); B.group.add(B.metal); gltf.scene.updateMatrixWorld(true);
+    gltf.scene.traverse(o => { if (!o.isMesh) return;            // unpack to plain float positions (the file is quantised) so the band can be re-sized in place
+      const g0 = o.geometry, M = o.matrixWorld, NM = new THREE.Matrix3().getNormalMatrix(M), P = g0.attributes.position, N = g0.attributes.normal, n = P.count;
+      const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), t = new THREE.Vector3();
+      for (let i = 0; i < n; i++) { t.fromBufferAttribute(P, i).applyMatrix4(M); t.toArray(pos, i * 3); if (N) { t.fromBufferAttribute(N, i).applyMatrix3(NM).normalize(); t.toArray(nor, i * 3); } }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); if (N) g.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); else g.computeVertexNormals();
+      if (g0.index) g.setIndex(g0.index);
+      const m = new THREE.Mesh(g, bandMetal); m.userData.pos0 = pos.slice(); B.meshes.push(m); B.metal.add(m); addProf(pos); });
+    addProf(dia.meshes.band.pos);
+    const W = MAXP + 1, Hh = dia.stones.length, data = new Float32Array(W * Hh * 4);
+    dia.stones.forEach((st, r) => { data[(r * W) * 4] = st.p.length; st.p.forEach((pl, i) => data.set(pl, (r * W + i + 1) * 4)); });
+    const pt = new THREE.DataTexture(data, W, Hh, THREE.RGBAFormat, THREE.FloatType); pt.magFilter = pt.minFilter = THREE.NearestFilter; pt.needsUpdate = true;
+    const dm = diaMat.clone(); dm.uniforms.uPlanes.value = pt; dm.uniforms.uEnv.value = envTex; Object.assign(dm.uniforms, sweepU);
+    const src = dia.meshes.band, per = src.sid.length / src.centres.length;
+    src.centres.forEach((c, i) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(src.pos.slice(i * per * 3, (i + 1) * per * 3), 3));
+      g.setAttribute('sid', new THREE.Float32BufferAttribute(src.sid.slice(i * per, (i + 1) * per), 1));
+      const m = new THREE.Mesh(g, dm); bindCam(m); B.group.add(m); B.stones.push({ m, c });
+    });
+    return B;
+  });
+  return B.ready;
+}
+function ringProfile(V) {                              // the ring's reach towards the band side at each radius (0.1 mm bins, at size 7)
+  const prof = new Float32Array(200).fill(-1), inv = new THREE.Matrix4(), rel = new THREE.Matrix4(), v = new THREE.Vector3();
+  V.group.updateMatrixWorld(true); inv.copy(V.group.matrixWorld).invert();
+  for (const k of ['shank', 'head_solid', 'head_seats', 'claws', 'beadprongs', 'beads']) {
+    const P = V.parts[k]; if (!P) continue;
+    P.traverse(o => { if (!o.isMesh) return; rel.multiplyMatrices(inv, o.matrixWorld); const pa = o.geometry.attributes.position;
+      for (let i = 0; i < pa.count; i++) { v.fromBufferAttribute(pa, i).applyMatrix4(rel); const b = Math.floor(Math.hypot(v.x, v.y) * 10); if (b < 200 && -v.z > prof[b]) prof[b] = -v.z; } });
+  }
+  return prof;
+}
+function bandOffset(ring, band, shift) {               // closest the band's centre can come: the ring's reach plus the band's half-width, at every radius they share
+  let z = 0; const sb = Math.round(shift * 10);
+  for (let b = 0; b < 200; b++) { const bb = b - sb; if (bb < 0 || bb >= 200 || band[bb] < 0) continue;
+    for (const d of [-1, 0, 1]) { const r = ring[b + d]; if (r !== undefined && r >= 0 && r + band[bb] > z) z = r + band[bb]; } }
+  return z;
+}
+let bandZ = 0;
+function showBand(V) {
+  const on = opt.band !== 'none';
+  for (const k in bands) if (!on || k !== opt.band) bands[k].group.visible = false;
+  if (!on) return;
+  const B = BANDS[opt.band];
+  if (bands[opt.band] && bands[opt.band].metal) bandV = bands[opt.band];
+  if (!bandV || bandV.key !== opt.band || !bandV.metal) { loadBand(opt.band).then(() => { if (opt.band !== 'none') show(); }); return; }
+  const dB = BORE(opt.size) - B.bore;                  // same finger size as the ring: the band's inside is moved out to the ring's bore, its thickness kept
+  if (bandV.dB !== dB) { bandV.dB = dB;
+    for (const o of bandV.meshes) { const p0 = o.userData.pos0, pa = o.geometry.attributes.position, a = pa.array;
+      for (let i = 0; i < a.length; i += 3) { const r = Math.hypot(p0[i], p0[i + 1]) || 1; a[i] = p0[i] * (1 + dB / r); a[i + 1] = p0[i + 1] * (1 + dB / r); a[i + 2] = p0[i + 2]; }
+      pa.needsUpdate = true; o.geometry.computeBoundingSphere(); }
+    for (const st of bandV.stones) { const r = Math.hypot(st.c[0], st.c[1]) || 1; st.m.position.set(st.c[0] / r * dB, st.c[1] / r * dB, 0); }
+  }
+  const C = V.bandClear || (V.bandClear = {}), key = V.rx.join(',') + '|' + bandV.key;          // per model actually shown, per band actually loaded
+  if (C[key] === undefined) C[key] = bandOffset(ringProfile(V), bandV.prof, BORE(7) - BANDS[bandV.key].bore);   // both measured at size 7: ring and band grow together
+  bandZ = C[key] + 0.06;
+  bandV.group.position.set(0, 0, -bandZ); bandV.group.visible = curView !== 'inside';   // set aside while looking inside the ring at the engraving
+}
+
+// ---------- steps ----------
+const STEPS = [
+  { id: 'stone', name: 'Stone', view: 'top', note: 'Top view', q: 'Choose your stone', ask: 'Choose a shape to continue' },
+  { id: 'setting', name: 'Setting', view: 'close', note: 'Close-up on the setting', q: 'Choose your setting', ask: 'Choose your prongs to continue' },
+  { id: 'metal', name: 'Metal', view: 'home', note: 'Full view', q: 'Choose your metal', ask: 'Choose a metal to continue' },
+  { id: 'size', name: 'Size', view: 'side', note: 'Side view', q: 'Choose your ring size', ask: 'Choose a size to continue' },
+  { id: 'band', name: 'Wedding band', short: 'Band', view: 'pair', note: 'Paired with your ring', q: 'Add a wedding band?', ask: 'Choose an option to continue' },
+  { id: 'engrave', name: 'Engraving', view: 'inside', note: 'Inside the band', q: 'Add an engraving?', ask: 'Choose an option to continue' },
+];
+// guided: each step needs a choice before the next one opens; any earlier step can be revisited
+const picked = { stone: false, setting: false, metal: false, size: false, band: false, engrave: false };
+function isDone(i) { const id = STEPS[i].id; if (!picked[id]) return false; return id !== 'engrave' || opt.engMode !== 'inside' || !!opt.eng.trim(); }
+const firstOpen = () => { for (let i = 0; i < STEPS.length; i++) if (!isDone(i)) return i; return STEPS.length - 1; };
+const on = (id, cond) => picked[id] && cond;            // shown as selected only once the client has chosen it
+let step = 0;
+const metalName = m => ({ pt: 'Platinum', yg: '14k yellow gold', rg: '14k rose gold', tt: 'Two tone' })[m];
+const metalLong = m => m === 'tt' ? 'Platinum head, 14k yellow gold shank' : metalName(m);
+const metalIn = m => m === 'tt' ? 'platinum and 14k yellow gold' : metalName(m).toLowerCase();
+const hasPaveNow = () => { const V = variants[keyOf()]; return !!(V && V.parts.shank_pave && V.parts.bpave); };
+function stepValue(id) {
+  const nm = MAN.shapes[opt.shape].name;
+  if (id === 'stone') return (+opt.ct) + ' ct ' + nm.toLowerCase() + (RATIOS[opt.shape] ? ' · ' + ratioOf(opt.shape).toFixed(2) : '');
+  if (id === 'setting') return (opt.prong === 'claw' ? 'Claw' : 'Bead') + ' prongs' + (opt.halo === '1' ? ' · hidden halo' : '') + (opt.pave === '1' && hasPaveNow() ? ' · U-pavé' : '');
+  if (id === 'metal') return metalLong(opt.metal);
+  if (id === 'engrave') return engText() || 'None';
+  if (id === 'band') return opt.band === 'none' ? 'Not added' : BANDS[opt.band].name;
+  return opt.sizeTBD ? 'Size to be measured' : 'Size ' + opt.size;
+}
+let stoneMM = '', review = false;
+const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+const ctText = () => (+opt.ct).toFixed(1) + (+opt.ct === 1 ? ' carat' : ' carats');
+const ctAdj = () => (+opt.ct).toFixed(1) + ' carat';
+const NEXT = ['Continue to the setting', 'Continue to the metal', 'Continue to the size', 'Continue to the wedding band', 'Continue to the engraving', 'See my ring'];
+function renderTabs() {
+  const open = firstOpen();
+  $('tabs').innerHTML = STEPS.map((st, i) => `<button class="tab${isDone(i) && i !== step ? ' done' : ''}" role="tab" aria-selected="${i === step && !review}" data-i="${i}"${i > open && !review ? ' disabled aria-disabled="true"' : ''}>${st.short ? `<span class="lg">${st.name}</span><span class="sm">${st.short}</span>` : st.name}</button>`).join('');
+  $('tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { if (b.disabled) return; review = false; goStep(+b.dataset.i); });
+}
+const SW = { yg: 'radial-gradient(circle at 35% 30%, #FBE5A8, #C99A3E 60%, #8C6420)', rg: 'radial-gradient(circle at 35% 30%, #FBE0D4, #C88B75 60%, #8E5847)', pt: 'radial-gradient(circle at 35% 30%, #FFFFFF, #B9B8B4 60%, #77756F)',
+  tt: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,.7), rgba(255,255,255,0) 55%), linear-gradient(135deg, #D6D5D1 0 50%, #C99A3E 50% 100%)' };
+function renderBody() {
+  const id = STEPS[step].id; let h = `<div class="qhead"><h3>${STEPS[step].q}</h3><span>Step ${step + 1} of ${STEPS.length}</span></div>`;
+  if (id === 'stone') {
+    const cts = MAN.shapes[opt.shape].cts, ci = cts.indexOf(opt.ct), R = RATIOS[opt.shape];
+    h += '<div class="stone"><div class="shapes" id="shapes">' + Object.entries(MAN.shapes).map(([k, v]) =>
+      `<button class="shape" data-k="shape" data-v="${k}" aria-pressed="${on('stone', k === opt.shape)}"><span><img src="img/shape_${k}.png" alt="" loading="lazy"></span>${v.name}</button>`).join('') + '</div>';
+    h += `<div class="carat"><button class="round" id="ctDn" aria-label="Smaller stone"${ci <= 0 ? ' disabled' : ''}>−</button>
+      <div class="c"><div class="big">${ctText()}</div><div class="mm">${stoneMM}</div></div>
+      <button class="round" id="ctUp" aria-label="Larger stone"${ci >= cts.length - 1 ? ' disabled' : ''}>+</button></div>`;
+    if (R) {
+      const vs = []; for (let v = R[1]; v <= R[2] + 1e-6; v += 0.05) vs.push(+v.toFixed(2));
+      h += '<div class="ratios" id="ratios"><span class="lab">Length to width</span>' + vs.map(v => `<button class="rt" data-ratio="${v}" aria-pressed="${on('stone', Math.abs(v - ratio[opt.shape]) < 1e-6)}">${v.toFixed(2)}</button>`).join('') + '</div>';
+    }
+    h += '</div>';
+  } else if (id === 'setting') {
+    h += `<div class="setting"><div class="pair"><button class="opt" data-k="prong" data-v="claw" aria-pressed="${on('setting', opt.prong === 'claw')}"><b>Claw prongs</b><i>Pointed, barely there</i></button>
+      <button class="opt" data-k="prong" data-v="bead" aria-pressed="${on('setting', opt.prong === 'bead')}"><b>Bead prongs</b><i>Soft and rounded</i></button></div>
+      <div class="toggles"><button class="toggle" data-t="halo" aria-pressed="${opt.halo === '1'}"><span>Hidden halo<small>Small diamonds tucked under the stone</small></span><span class="sw2"><i></i></span></button>` +
+      (hasPaveNow() ? `<button class="toggle" data-t="pave" aria-pressed="${opt.pave === '1'}"><span>U-pavé band<small>1.6 mm diamonds up the shoulders</small></span><span class="sw2"><i></i></span></button>` : '') + '</div></div>';
+  } else if (id === 'metal') {
+    h += '<div class="metals">' + ['yg', 'rg', 'pt', 'tt'].map(m => `<button class="metal" data-k="metal" data-v="${m}" aria-pressed="${on('metal', opt.metal === m)}"><span style="background:${SW[m]}"></span>${metalName(m)}</button>`).join('') + '</div>';
+  } else if (id === 'band') {
+    h += `<div class="pair bands"><button class="opt" data-bd="none" aria-pressed="${on('band', opt.band === 'none')}"><b>Just the ring</b><i>You can add a band later</i></button>` +
+      Object.entries(BANDS).map(([k, b]) => `<button class="opt" data-bd="${k}" aria-pressed="${on('band', opt.band === k)}"><b>${b.name}</b><i>${b.note}</i></button>`).join('') + `</div>
+      <div class="note" style="color:var(--sand)">Made in your metal and size, and shown sitting against your ring as it would on the finger.</div>`;
+  } else if (id === 'engrave') {
+    h += `<div class="eng"><div class="pair e3"><button class="opt" data-em="none" aria-pressed="${on('engrave', opt.engMode === 'none')}"><b>No engraving</b><i>Keep it plain</i></button>
+      <button class="opt" data-em="inside" aria-pressed="${on('engrave', opt.engMode === 'inside')}"><b>Inside the band</b><i>Placed and sized for you</i></button>
+      <button class="opt" data-em="custom" aria-pressed="${on('engrave', opt.engMode === 'custom')}"><b>Something different</b><i>Another spot, lettering or language</i></button></div>`;
+    if (!picked.engrave || opt.engMode === 'none') {}
+    else if (opt.engMode === 'inside') {
+      h += `<div style="display:flex;flex-direction:column;gap:8px"><div class="lab2"><span>Your engraving</span><span id="engLeft"></span></div>
+        <input class="etext" id="eText" maxlength="40" autocomplete="off" spellcheck="false" placeholder="Names, a date, a few words" value="${opt.eng.replace(/"/g, '&quot;')}">
+        <div class="note" style="color:var(--sand)">Kept clear of the top and the bottom of the band, where the ring is resized.</div></div>
+        <div class="fonts">` + Object.entries(ENG_FONTS).map(([k, f]) => `<button class="fnt" data-ef="${k}" aria-pressed="${opt.engFont === k}"><b style="font-family:${f.family};font-style:${f.style};font-weight:${f.weight}">${f.upper ? 'AJ' : 'Aj'}</b><i>${f.name}</i></button>`).join('') + '</div>';
+    } else {
+      h += `<div style="display:flex;flex-direction:column;gap:8px;grid-column:1 / -1"><div class="lab2"><span>Tell us what you have in mind</span></div>
+        <textarea class="etext" id="eNote" rows="3" maxlength="400" placeholder="Where it goes, the words, the lettering or language. We'll work it out with you on your consultation.">${opt.engNote.replace(/</g, '&lt;')}</textarea></div>`;
+    }
+    h += '</div>';
+  } else {
+    h += `<div class="lab2"><span>Ring size (US)</span><span>Inside ${(2 * BORE(opt.size)).toFixed(1)} mm</span></div><div class="sizes">` +
+      SIZES.map(z => `<button class="sz" data-k="size" data-v="${z}" aria-pressed="${on('size', !opt.sizeTBD && opt.size === z)}">${z}</button>`).join('') + `</div><button class="tbd" id="bTBD" aria-pressed="${on('size', !!opt.sizeTBD)}">Not sure yet: we'll measure it on your consultation</button>`;
+  }
+  $('body').innerHTML = h;
+  $('body').querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
+    const k = b.dataset.k; opt[k] = k === 'size' ? +b.dataset.v : b.dataset.v;
+    picked[{ shape: 'stone', prong: 'setting', metal: 'metal', size: 'size' }[k]] = true; if (k === 'size') opt.sizeTBD = false;
+    if (k === 'shape') { const cts = MAN.shapes[opt.shape].cts; if (!cts.includes(opt.ct)) opt.ct = cts.includes('3.0') ? '3.0' : cts[0]; }
+    update(k === 'shape'); celebrate();
+  });
+  if ($('bTBD')) $('bTBD').onclick = () => { opt.sizeTBD = true; opt.size = 7; picked.size = true; update(); celebrate(); };
+  $('body').querySelectorAll('[data-bd]').forEach(b => b.onclick = () => { opt.band = b.dataset.bd; picked.band = true; update(); celebrate(); if (opt.band !== 'none') setTimeout(() => setView('pair', 900), 60); });
+  $('body').querySelectorAll('[data-em]').forEach(b => b.onclick = () => { opt.engMode = b.dataset.em; picked.engrave = true; update(); celebrate(); if (opt.engMode === 'inside' && $('eText') && DESK.matches) $('eText').focus(); });
+  $('body').querySelectorAll('[data-ef]').forEach(b => b.onclick = () => { opt.engFont = b.dataset.ef; update(); celebrate(); });
+  if ($('eText')) { $('eText').oninput = e => { opt.eng = e.target.value; show(); syncNext(); renderTabs(); }; $('eText').onchange = () => celebrate(); engCount(); }
+  if ($('eNote')) $('eNote').oninput = e => { opt.engNote = e.target.value; };
+  $('body').querySelectorAll('[data-ratio]').forEach(b => b.onclick = () => { ratio[opt.shape] = +b.dataset.ratio; picked.stone = true; update(); celebrate(); });
+  $('body').querySelectorAll('.toggle').forEach(b => b.onclick = () => { opt[b.dataset.t] = opt[b.dataset.t] === '1' ? '0' : '1'; update(); celebrate(); });
+  const cts = MAN.shapes[opt.shape].cts, ci = cts.indexOf(opt.ct);
+  if ($('ctDn')) { $('ctDn').onclick = () => { if (ci > 0) { opt.ct = cts[ci - 1]; picked.stone = true; update(); celebrate(); } }; $('ctUp').onclick = () => { if (ci < cts.length - 1) { opt.ct = cts[ci + 1]; picked.stone = true; update(); celebrate(); } }; }
+  for (const id2 of ['shapes', 'ratios']) { const box = $(id2), sel = box && box.querySelector('[aria-pressed="true"]'); if (sel && (sel.offsetLeft < box.scrollLeft || sel.offsetLeft + sel.offsetWidth > box.scrollLeft + box.clientWidth)) box.scrollLeft = sel.offsetLeft - box.clientWidth / 2 + sel.offsetWidth / 2; }
+}
+function specRows() {
+  const nm = MAN.shapes[opt.shape].name.toLowerCase(), mm = stoneMM.split(',')[0];
+  return [['Stone', `${ctAdj()} ${nm}${mm ? ', ' + mm : ''}`], ['Ratio', RATIOS[opt.shape] ? ratioOf(opt.shape).toFixed(2) : ''], ['Setting', (opt.prong === 'claw' ? 'Claw' : 'Bead') + ' prongs' + (opt.halo === '1' ? ', hidden halo' : '')],
+    ['Shank', opt.pave === '1' && hasPaveNow() ? 'U-pavé, 1.6 mm diamonds' : 'Plain'], ['Metal', metalLong(opt.metal)], ['Size', opt.sizeTBD ? 'To be measured on your consultation' : String(opt.size)], ['Wedding band', opt.band === 'none' ? '' : BANDS[opt.band].name + ', ' + BANDS[opt.band].note], ['Engraving', engText()]].filter(r => r[1]);
+}
+function summaryText() { return 'The Cathedral: ' + specRows().map(r => r[0] + ' ' + r[1]).join('; '); }
+function renderReview() {
+  const body = encodeURIComponent('Here is the ring I designed with DMND Ave.\n\n' + specRows().map(r => r[0] + ': ' + r[1]).join('\n'));
+  $('row').innerHTML = `<div class="review-in"><h2>Your Cathedral</h2><dl class="spec">${specRows().map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl>
+    <div class="rbtns"><a class="btn" style="background:#253D38;color:#F6F3EC" href="https://dmndave.co/schedule" target="_blank" rel="noopener">Book a free consultation</a>
+    <a class="btn line" href="mailto:?subject=${encodeURIComponent('My DMND Ave ring')}&amp;body=${body}">Email me this design</a>
+    <p class="small">A complimentary 30-minute video call with Alyssa and Alain</p></div>
+    <button class="back" id="bBack">Change something</button></div>`;
+  $('bBack').onclick = () => { review = false; restoreRow(); goStep(STEPS.length - 1); };
+}
+function restoreRow() { $('row').innerHTML = '<div class="body" id="body"></div><div class="cta"><button class="bk" id="bPrev">Back</button><button class="btn" id="bNext">Continue</button></div>'; $('bNext').onclick = next; $('bPrev').onclick = prev; }
+function syncNext() {                                  // the next step opens once this one has a choice; the button says what is missing until then
+  if (!$('bNext')) return; const ok = isDone(step);
+  $('bNext').disabled = !ok; $('bNext').textContent = ok ? NEXT[step] : (STEPS[step].id === 'engrave' && picked.engrave && opt.engMode === 'inside' ? 'Type your engraving to continue' : STEPS[step].ask);
+  if ($('bPrev')) $('bPrev').style.display = step > 0 ? '' : 'none';
+}
+function prev() { if (step > 0) goStep(step - 1); }
+const DESK = matchMedia('(min-width: 900px)');
+function renderUI() {
+  renderTabs();
+  $('tray').classList.toggle('review', review);
+  if (review) { $('tabs').style.display = 'none'; renderReview(); }
+  else { $('tabs').style.display = ''; if (!$('body')) restoreRow(); renderBody(); syncNext(); }
+  $('app').classList.toggle('picking', !review);
+  const nm = MAN.shapes[opt.shape].name.toLowerCase();
+  $('hl2').textContent = `${+opt.ct} carat ${nm} in ${metalIn(opt.metal)}`;
+  $('hl3').textContent = `A ${(+opt.ct)} carat ${nm} held in ${opt.prong === 'claw' ? 'claw' : 'bead'} prongs${opt.halo === '1' ? ', with a hidden halo beneath the stone' : ''}${opt.pave === '1' && hasPaveNow() ? ' and diamonds up the band' : ''}. Made to order in ${opt.metal === 'tt' ? 'a platinum head on a 14k yellow gold shank' : metalIn(opt.metal)}, designed with you on a video consultation.`;
+  requestAnimationFrame(resize);
+}
+function update(reframe) { show(); renderUI(); if (reframe && STEPS[step].view !== 'home') setView(STEPS[step].view, 600); }
+function goStep(i) { step = i; showBox(false); $('app').classList.remove('finale'); $('tray').classList.remove('hold'); renderUI(); setView(STEPS[i].view); }
+const BOX_ON = false;                                   // the 3D ring box is parked: it read as less luxurious than the ring on velvet
+function next() { if (!isDone(step)) return; if (step < STEPS.length - 1) goStep(step + 1); else { review = true; renderUI(); if (BOX_ON) { showBox(true); setView('box', 1400); } else finale(); } }
+function finale() {                                   // the reveal: the camera settles into a slow hero turn, the light gathers on the ring, one sweep of light
+  $('app').classList.add('finale'); setView('finale', 1700);
+  if (RM.matches) return;
+  $('tray').classList.add('hold');
+  const release = () => { $('tray').classList.remove('hold'); stageWrap.removeEventListener('pointerdown', release); };
+  stageWrap.addEventListener('pointerdown', release); setTimeout(release, 3300);
+  setTimeout(() => { if (review) sweepWant = true; }, 1800);
+}
+$('bNext').onclick = next; $('bPrev').onclick = prev;
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2000); }
+$('bSave').onclick = () => {
+  const on = $('bSave').getAttribute('aria-pressed') !== 'true'; $('bSave').setAttribute('aria-pressed', String(on));
+  try { if (on) localStorage.setItem('dmnd_saved', JSON.stringify({ opt, ratio })); else localStorage.removeItem('dmnd_saved'); } catch (e) {}
+  toast(on ? 'Saved on this device' : 'Removed from saved');
+};
+
+function show() {
+  const key = keyOf(), V = variants[key];
+  const busy = $('busy');
+  if (!V || !V.parts.shank) {                               // keep the current ring on screen until the new one is in
+    busy.classList.add('on');
+    loadVariant(key).then(() => { busy.classList.remove('on'); if (keyOf() === key) { show(); renderUI(); if (STEPS[step].view !== 'home') setView(STEPS[step].view, 600); } }).catch(e => { busy.textContent = 'Not available yet'; console.error(e); });
+    return;
+  }
+  for (const k in variants) variants[k].group.visible = (k === key);
+  const P = V.parts, halo = opt.halo === '1';
+  P.head_solid.visible = !halo; P.head_seats.visible = halo; P.beads.visible = halo; if (P.pave) P.pave.visible = halo;
+  P.claws.visible = opt.prong === 'claw'; P.beadprongs.visible = opt.prong === 'bead';
+  const hasPave = !!(P.shank_pave && P.bpave), pave = hasPave && opt.pave === '1';
+  P.shank.visible = !pave; for (const k of ['shank_pave', 'bpave']) if (P[k]) P[k].visible = pave;
+  if (P.bbeads) P.bbeads.visible = false;                    // U pave without bead prongs on the band (Alain, 17 Nov)
+  const R = RATIOS[opt.shape], r = R ? ratio[opt.shape] : 1, sx = R ? Math.sqrt(R[0] / r) : 1, sz = R ? Math.sqrt(r / R[0]) : 1;
+  applyRatio(V, sx, sz);
+  const dR = BORE(opt.size) - BORE(7); sizeU.uDR.value = dR; sizeU.uSX.value = sx; V.group.position.y = dR;
+  if (V.bstones) for (const b of V.bstones) { const o = morphOffset(b.c, dR, sx); b.m.position.set(o[0], o[1], 0); }
+  const tone = toneOf(opt.metal), M = METALS[tone.shank], MH = METALS[tone.head];
+  if (!metalGoal) for (const [C, G] of [[metalCur, M], [headCur, MH]]) { C.c.setRGB(...G.rgb); C.r = G.rough; C.e = G.env; }
+  metalGoal = M; headGoal = MH; applyMetal();
+  // centre stone: size read off the model as shown
+  const g = P.stone.geometry, pa = g.attributes.position.array, sid = g.attributes.sid.array;
+  let mnx = 1e9, mxx = -1e9, mnz = 1e9, mxz = -1e9, mny = 1e9, mxy = -1e9;
+  for (let i = 0; i < sid.length; i++) { if (sid[i] !== 0) continue; const x = pa[3 * i], y = pa[3 * i + 1], z = pa[3 * i + 2]; if (x < mnx) mnx = x; if (x > mxx) mxx = x; if (y < mny) mny = y; if (y > mxy) mxy = y; if (z < mnz) mnz = z; if (z > mxz) mxz = z; }
+  if (mxx > mnx) {
+    const a = mxx - mnx, b = mxz - mnz, L = Math.max(a, b), W = Math.min(a, b);
+    stoneMM = (opt.shape === 'round' ? L.toFixed(1) + ' mm across' : L.toFixed(1) + ' × ' + W.toFixed(1) + ' mm') + (R ? ', ratio ' + r.toFixed(2) : '');
+    stoneBox.set((mnx + mxx) / 2, (mny + mxy) / 2 + dR, (mnz + mxz) / 2); stoneLen = L; stoneTop = mxy + dR;
+  }
+  showBand(V);
+  buildEngraving(); engCount();
+  if (shown !== key) { shown = key; queuePrefetch(); }
+}
+const stoneBox = new THREE.Vector3(0, 13, 0); let stoneLen = 10, stoneTop = 16;
+
+function parseStart() {                                        // optional #s=oval&c=3.0&r=1.45&p=claw&h=1&b=0&m=yg&z=6.5
+  const q = new URLSearchParams(location.hash.slice(1)); if (!q.toString()) return;
+  for (const k in picked) picked[k] = true; opt.engMode = 'none';
+  if (MAN.shapes[q.get('s')]) opt.shape = q.get('s');
+  if (MAN.shapes[opt.shape].cts.includes(q.get('c'))) opt.ct = q.get('c');
+  const R = RATIOS[opt.shape], rv = +q.get('r'); if (R && rv >= R[1] - 1e-6 && rv <= R[2] + 1e-6) ratio[opt.shape] = Math.round(rv * 20) / 20;
+  if (['claw', 'bead'].includes(q.get('p'))) opt.prong = q.get('p');
+  if (['0', '1'].includes(q.get('h'))) opt.halo = q.get('h'); if (['0', '1'].includes(q.get('b'))) opt.pave = q.get('b');
+  if (METALS[q.get('m')] || TWO_TONE[q.get('m')]) opt.metal = q.get('m'); if (SIZES.includes(+q.get('z'))) opt.size = +q.get('z');
+}
+fetch('v/manifest.json').then(r => r.json()).then(man => {
+  MAN = man; parseStart();
+  const cts = MAN.shapes[opt.shape].cts; if (!cts.includes(opt.ct)) opt.ct = cts.includes('3.0') ? '3.0' : cts[0];
+  return loadVariant(keyOf());
+}).then(() => { show(); renderUI(); if (introOn) { setView('home', 10); if (tw) tw.d = D_FAR * (DESK.matches ? 0.78 : 0.74); revealRing(); } else setView('top', 10); try { const sv = JSON.parse(localStorage.getItem('dmnd_saved') || 'null'); if (sv) $('bSave').setAttribute('aria-pressed', 'true'); } catch (e) {} $('loading').classList.add('done'); })
+  .catch(e => { $('loading').textContent = 'Could not load the ring'; console.error(e); });
+const setHalo = on => { opt.halo = on ? '1' : '0'; show(); renderUI(); };
+
+// ---------- turning: turntable. Side to side spins the ring all the way round; up and down only tilts it
+// between just below eye level and straight down onto the stone. Past either end it gives a little and springs back.
+const PITCH_HOME = 0.42, PITCH_MIN = -0.12, PITCH_MAX = Math.PI / 2 - 0.002;
+const SPIN_SPEED = 0.30, RESUME_MS = 1400;
+let rock = 0; let yaw = -0.66, pitch = PITCH_HOME, velYaw = 0, velPitch = 0, spinNow = 0, spinTarget = SPIN_SPEED;
+let spinning = true, lastTouch = -1e9;
+const pointers = new Map(); let pinch0 = 0, dist0 = camDist, distGoal = camDist, zoomCX = 0, zoomCY = 0, lastWheel = -1e9;
+const cvs = renderer.domElement;
+document.addEventListener('contextmenu', e => e.preventDefault());
+const qYaw = new THREE.Quaternion(), qPitch = new THREE.Quaternion(), AX = new THREE.Vector3(1, 0, 0), AY = new THREE.Vector3(0, 1, 0);
+const SOFT = 0.10;
+function applyTurn() {
+  pitch = THREE.MathUtils.clamp(pitch, PITCH_MIN - SOFT, PITCH_MAX);
+  qPitch.setFromAxisAngle(AX, pitch); qYaw.setFromAxisAngle(AY, yaw + rock);
+  turn.quaternion.copy(qPitch).multiply(qYaw);
+}
+applyTurn();
+
+// camera moves: a short eased glide between framings; touching the ring stops it at once
+let tw = null;
+const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const fitDist = mm => mm / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * Math.min(1, camera.aspect));
+let curView = 'top', roll = 0;
+const BOX_YAW = 0.42, BOX_PITCH = 0.30, PAIR_YAW = -0.75;
+const INSIDE_YAW = 2.2, INSIDE_PITCH = 0.08, INSIDE_ROLL = Math.PI / 2;
+function setView(v, ms = 900) {
+  curView = v; if (bandV && bandV.metal) bandV.group.visible = opt.band === bandV.key && v !== 'inside';
+  let y = yaw, p = PITCH_HOME, d = D_FAR, f = RING_CENTER.clone(), spin = SPIN_SPEED;
+  const near = a => a + Math.round((yaw - a) / Math.PI) * Math.PI;                 // nearest equivalent heading, so it never swings the long way round
+  if (v === 'top') { y = near(0); p = PITCH_MAX; d = Math.min(fitDist(stoneLen * 2.3), 0.66 * D_FAR); f = stoneBox.clone(); spin = 0; }
+  else if (v === 'close' && !DESK.matches) { y = yaw; p = 0.30; d = Math.max(D_FAR * 0.8, fitDist(33)); f.y += 2.5; spin = 0; }   // phones: the whole ring, head forward
+  else if (v === 'close') { y = yaw; p = 0.30; d = Math.max(D_MIN + 4, Math.min(fitDist(stoneLen * 2.6), 0.62 * D_FAR)); f = stoneBox.clone(); f.y = (stoneBox.y + stoneTop) / 2 - 1.5; spin = 0.14; }
+  else if (v === 'side') { y = near(0); p = 0.04; d = Math.max(D_FAR * 0.92, fitDist(36)); f.y += 1.5; spin = 0; }
+  else if (v === 'pair') { y = PAIR_YAW + Math.round((yaw - PAIR_YAW) / (2 * Math.PI)) * 2 * Math.PI; p = 0.30; d = Math.max(D_FAR * 0.74, fitDist(46)); f.z = opt.band === 'none' ? 0 : -bandZ / 2; spin = 0; }
+  else if (v === 'finale') { y = yaw + 0.9; p = 0.22; d = Math.max(D_FAR * 0.85, fitDist(44)); f.y += 1.5; spin = SPIN_SPEED * 0.45; }
+  else if (v === 'box') { y = BOX_YAW + Math.round((yaw - BOX_YAW) / (2 * Math.PI)) * 2 * Math.PI; p = BOX_PITCH; d = fitDist(BOX.W * 2.15); f = new THREE.Vector3(0, BOX.RIM + 10, -6); spin = 0; }
+  else if (v === 'inside') {                           // look through the finger hole at the engraving, turned so the words read across
+    const V = variants[keyOf()], F = V && V.parts.shank ? (V.engF || (V.engF = engFrame(V))) : null;
+    const dR = BORE(opt.size) - BORE(7), r = (F ? F.r0 : BORE(7)) + dR;
+    const L = engInfo && engInfo.fits && engInfo.len ? engInfo.len : 14;
+    y = INSIDE_YAW + Math.round((yaw - INSIDE_YAW) / (2 * Math.PI)) * 2 * Math.PI; p = INSIDE_PITCH; d = Math.max(D_MIN + 4, fitDist(L * (DESK.matches ? 1.15 : 1.9))); f = new THREE.Vector3(r * Math.cos(ENG_TC), r * Math.sin(ENG_TC), F ? F.zc : 0); spin = 0;
+  }
+  tw = { t0: performance.now(), ms, y0: yaw, p0: pitch, d0: camDist, f0: focus.clone(), tp0: turn.position.clone(), y, p, d, f, spin, r0: roll, r: v === 'inside' ? INSIDE_ROLL : 0 };
+  velYaw = velPitch = 0; spinNow = 0; spinTarget = spin; distGoal = d;
+  spinning = spin > 0; setSpinIcon();
+}
+const cancelTween = () => { if (tw) { tw = null; distGoal = camDist; } };
+
+let tap = { t: 0, x: 0, y: 0 }, downAt = null;
+cvs.addEventListener('pointerdown', e => {
+  cvs.setPointerCapture(e.pointerId); pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  cvs.classList.add('drag'); velYaw = velPitch = 0; spinNow = 0; lastTouch = performance.now(); cancelTween();
+  downAt = { x: e.clientX, y: e.clientY, t: performance.now(), moved: false };
+  if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch0 = Math.hypot(a.x - b.x, a.y - b.y); dist0 = camDist; }
+});
+cvs.addEventListener('pointermove', e => {
+  const p = pointers.get(e.pointerId); if (!p) return;
+  let dx = e.clientX - p.x, dy = e.clientY - p.y; p.x = e.clientX; p.y = e.clientY;
+  if (roll) { const c = Math.cos(roll), s = Math.sin(roll); [dx, dy] = [dx * c - dy * s, dx * s + dy * c]; }
+  if (downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 6) downAt.moved = true;
+  lastTouch = performance.now();
+  if (pointers.size === 1) {
+    const k = 3.2 / Math.max(300, Math.min(cvs.clientWidth, cvs.clientHeight));
+    let dp = dy * k; if ((pitch < PITCH_MIN && dp < 0)) dp *= 0.3;                // resistance past the lowest angle
+    velYaw = dx * k; velPitch = dp; yaw += velYaw; pitch += velPitch; applyTurn();
+  } else if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    zoomCX = (a.x + b.x) / 2; zoomCY = (a.y + b.y) / 2;
+    const want = THREE.MathUtils.clamp(dist0 * pinch0 / Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)), D_MIN, D_MAX);
+    if (want < camDist && performance.now() - lastWheel > 250) { const L = pickLocal(zoomCX, zoomCY); if (L) setFocus(L); }
+    lastWheel = performance.now(); distGoal = want; stepZoom(want);
+  }
+});
+const up = e => {
+  pointers.delete(e.pointerId); if (!pointers.size) cvs.classList.remove('drag'); lastTouch = performance.now();
+  if (downAt && !downAt.moved && !pointers.size && performance.now() - downAt.t < 300) {   // a tap: two taps close together zoom in on that spot, or back out
+    const now = performance.now();
+    if (now - tap.t < 320 && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) < 30) { doubleTap(e.clientX, e.clientY); tap.t = 0; }
+    else tap = { t: now, x: e.clientX, y: e.clientY };
+  }
+  downAt = null;
+};
+cvs.addEventListener('pointerup', up); cvs.addEventListener('pointercancel', up);
+cvs.addEventListener('wheel', e => {
+  e.preventDefault(); cancelTween();
+  const now = performance.now(), dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+  const g = THREE.MathUtils.clamp(distGoal * Math.exp(THREE.MathUtils.clamp(dy, -120, 120) * 0.0016), D_MIN, D_MAX);
+  if (g < camDist && (now - lastWheel > 250 || Math.hypot(e.clientX - zoomCX, e.clientY - zoomCY) > 40)) { const L = pickLocal(e.clientX, e.clientY); if (L) setFocus(L); }
+  zoomCX = e.clientX; zoomCY = e.clientY; distGoal = g; lastWheel = now; lastTouch = now;
+}, { passive: false });
+function doubleTap(cx, cy) {
+  if (camDist > 0.6 * D_FAR) {
+    const L = pickLocal(cx, cy); if (!L) return;
+    tw = { t0: performance.now(), ms: 650, y0: yaw, p0: pitch, d0: camDist, f0: focus.clone(), tp0: turn.position.clone(), y: yaw, p: pitch, d: Math.max(D_MIN + 6, 0.42 * D_FAR), f: L, spin: 0 };
+    spinTarget = 0; spinning = false; setSpinIcon();
+  } else setView(STEPS[step].view === 'top' ? 'top' : 'home', 700);
+}
+
+// ---------- zoom toward the finger / cursor: the spot under it stays put, and the ring then turns about that spot ----------
+const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), tmpV = new THREE.Vector3();
+function setFocus(local) {
+  tmpV.copy(local).sub(focus).applyQuaternion(turn.quaternion);
+  turn.position.add(tmpV); focus.copy(local); ring.position.copy(focus).negate(); turn.updateMatrixWorld(true);
+}
+function pickLocal(cx, cy) {
+  const r = cvs.getBoundingClientRect();
+  ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+  camera.position.set(0, 0, camDist); camera.lookAt(0, 0, 0); if (roll) camera.rotateZ(roll); camera.updateMatrixWorld(); turn.updateMatrixWorld(true);
+  ray.setFromCamera(ndc, camera);
+  const vis = []; ring.traverseVisible(o => { if (o.isMesh) vis.push(o); });
+  const hit = ray.intersectObjects(vis, false)[0];
+  return hit ? ring.worldToLocal(hit.point.clone()) : null;
+}
+function stepZoom(d1) {
+  d1 = THREE.MathUtils.clamp(d1, D_MIN, D_MAX); if (Math.abs(d1 - camDist) < 1e-6) return;
+  const r = cvs.getBoundingClientRect();
+  const nx = ((zoomCX - r.left) / r.width) * 2 - 1, ny = -((zoomCY - r.top) / r.height) * 2 + 1;
+  const ky = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), kx = ky * camera.aspect;
+  turn.position.x += nx * kx * (d1 - camDist); turn.position.y += ny * ky * (d1 - camDist);
+  camDist = d1;
+}
+function zoomAt(cx, cy, want) { zoomCX = cx; zoomCY = cy; const L = want < camDist ? pickLocal(cx, cy) : null; if (L) setFocus(L); distGoal = THREE.MathUtils.clamp(want, D_MIN, D_MAX); stepZoom(distGoal); }
+
+const bSpin = $('bSpin');
+function setSpinIcon() {
+  bSpin.innerHTML = spinning
+    ? '<svg viewBox="0 0 12 12"><rect x="2" y="1" width="3" height="10"/><rect x="7" y="1" width="3" height="10"/></svg>'
+    : '<svg viewBox="0 0 12 12"><path d="M2 1l9 5-9 5z"/></svg>';
+  bSpin.setAttribute('aria-label', spinning ? 'Pause spin' : 'Spin'); bSpin.title = bSpin.getAttribute('aria-label');
+}
+bSpin.onclick = () => { spinning = !spinning; spinTarget = spinning ? (spinTarget || SPIN_SPEED) : 0; if (spinning && !spinTarget) spinTarget = SPIN_SPEED; setSpinIcon(); };
+
+// ---------- loop ----------
+const stageWrap = $('stagewrap');
+function resize() {
+  const w = stageWrap.clientWidth, h = stageWrap.clientHeight;
+  renderer.setSize(w, h, false); renderer.domElement.style.width = w + 'px'; renderer.domElement.style.height = h + 'px';
+  camera.aspect = w / h; camera.fov = w / h < 0.8 ? 34 : 24; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); new ResizeObserver(resize).observe(stageWrap); resize();
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.05), now = performance.now();
+  if (tw) {
+    const t = Math.min(1, (now - tw.t0) / tw.ms), k = ease(t);
+    yaw = tw.y0 + (tw.y - tw.y0) * k; pitch = tw.p0 + (tw.p - tw.p0) * k; camDist = tw.d0 + (tw.d - tw.d0) * k;
+    focus.lerpVectors(tw.f0, tw.f, k); ring.position.copy(focus).negate(); turn.position.copy(tw.tp0).multiplyScalar(1 - k);
+    if (tw.r !== undefined) roll = tw.r0 + (tw.r - tw.r0) * k;
+    applyTurn(); distGoal = camDist; if (t >= 1) { tw = null; lastTouch = now - RESUME_MS + 400; }
+  } else {
+    if (!pointers.size) {
+      velYaw *= Math.pow(0.04, dt); velPitch *= Math.pow(0.04, dt);
+      if (Math.abs(velYaw) + Math.abs(velPitch) > 1e-4) { yaw += velYaw; pitch += velPitch; }
+      else if (now - lastTouch > RESUME_MS) {
+        spinNow += ((spinning ? spinTarget : 0) - spinNow) * Math.min(1, dt * 1.5);
+        yaw += spinNow * dt;
+      }
+      if (pitch < PITCH_MIN) pitch += (PITCH_MIN - pitch) * Math.min(1, dt * 10);   // spring back from the soft edge
+      applyTurn();
+    }
+    if (pointers.size < 2 && Math.abs(distGoal - camDist) > 1e-3) stepZoom(camDist + (distGoal - camDist) * (1 - Math.exp(-dt * 12)));   // glide to the wheel's target
+    const out = THREE.MathUtils.smoothstep(camDist, 0.72 * D_FAR, 0.97 * D_FAR);   // zoomed back out: drift home to the centred view
+    if (out > 0 && focus.distanceToSquared(RING_CENTER) > 1e-8) setFocus(RING_CENTER);
+    if (!pointers.size && now - lastWheel > 350) turn.position.multiplyScalar(1 - Math.min(1, dt * 2.2));   // then the turning point glides back to the middle
+  }
+  tickEffects(now, dt); tickBox(now);
+  camera.position.set(0, 0, camDist); camera.lookAt(0, 0, 0); if (roll) camera.rotateZ(roll);
+  $('headline').style.opacity = (curView === 'close' || curView === 'inside' || (review && !DESK.matches)) ? 0 : THREE.MathUtils.clamp((camDist - 40) / 25, 0, 1);
+  renderer.render(scene, camera);
+});
+// ---------- opening page, light sweep, jeweller's turn, metal glide ----------
+function revealRing() {
+  const go = () => {
+    $('app').classList.add('lit');
+    if (!RM.matches) { turn.position.y = -5; lastWheel = performance.now() + 500; setTimeout(() => { sweepWant = true; }, 1500); }
+    const b = $('bBegin'); b.disabled = false; b.textContent = 'Design your ring';
+  };
+  setTimeout(go, RM.matches ? 0 : Math.max(0, 900 - (performance.now() - T_OPEN)));
+}
+function begin() {
+  if (!introOn) return; introOn = false;
+  const app = $('app'); app.classList.add('leaving');
+  setTimeout(() => {
+    app.classList.remove('intro', 'leaving', 'lit');
+    $('tray').classList.add('enter'); setTimeout(() => $('tray').classList.remove('enter'), 900);
+    resize(); goStep(0);
+  }, RM.matches ? 0 : 450);
+}
+$('bBegin').onclick = begin;
+function celebrate() { if (!RM.matches && !introOn) sweepWant = true; }
+let sweep = null;
+const goalC = new THREE.Color();
+function tickEffects(now, dt) {
+  if (sweepWant && !tw && !$('busy').classList.contains('on')) { sweepWant = false; sweep = { t0: now, ms: 1900 }; }
+  if (sweep) {
+    const t = sweep.hold != null ? sweep.hold : (now - sweep.t0) / sweep.ms;
+    if (t >= 1) { sweep = null; sweepU.uSwI.value = 0; rock = 0; applyTurn(); }
+    else {
+      const e = t * t * (3 - 2 * t);                          // the jeweller's turn: the ring rocks a few degrees under a soft studio light,
+      const a = -0.8 + 1.6 * e;                               // so the facets catch it on their own; no overlay, nothing drawn on top
+      sweepU.uSwN.value.set(Math.cos(a), 0.32, Math.sin(a)).normalize();
+      sweepU.uSwI.value = 1.5 * Math.pow(Math.sin(Math.PI * t), 2);
+      rock = 0.11 * Math.sin(Math.PI * e) * Math.sin(Math.PI * e * 0.5 + 0.6); applyTurn();
+    }
+  }
+  engMat.color.copy(metalCur.c); engMat.envMapIntensity = metalCur.e;
+  if (metalGoal) {
+    let moved = false;
+    for (const [C, G] of [[metalCur, metalGoal], [headCur, headGoal]]) {
+      goalC.setRGB(...G.rgb);
+      const d = Math.abs(goalC.r - C.c.r) + Math.abs(goalC.g - C.c.g) + Math.abs(goalC.b - C.c.b) + Math.abs(G.rough - C.r) + Math.abs(G.env - C.e);
+      if (d > 1e-4) { const k = RM.matches ? 1 : 1 - Math.exp(-dt * 4.5); C.c.lerp(goalC, k); C.r += (G.rough - C.r) * k; C.e += (G.env - C.e) * k; moved = true; }
+    }
+    if (moved) applyMetal();
+  }
+}
+// test hooks
+window.__ring = { bands, bandClear, bandZ: () => bandZ, bandInfo: () => bandV && { dB: bandV.dB, inner: Math.min(...bandV.meshes.map(o => { const a = o.geometry.attributes.position.array; let m = 1e9; for (let i = 0; i < a.length; i += 3) m = Math.min(m, Math.hypot(a[i], a[i + 1])); return m; })), bore: BORE(opt.size) }, showBox, boxG, setBoxAng: a => { boxAnim = null; boxG.userData.pivot.rotation.x = -a; }, setEngNS: v => { ENG_NS = v; engKey = ''; buildEngraving(); }, setEngFlip: (d, u) => { ENG_DIR = d; ENG_UP = u; engKey = ''; buildEngraving(); }, engMesh: () => engMesh, roll: () => roll, engInfo: () => engInfo, setRoll: r => { roll = r; }, begin, celebrate, sweepU, sweepAt: t => { sweep = t == null ? null : { t0: 0, ms: 1, hold: t }; if (t == null) { sweepU.uSwI.value = 0; rock = 0; } }, ratio, setFocus, zoomAt, focus, setHalo, opt, show, update, goStep, setView, variants, loadVariant, turn, THREE, setSpin: v => { spinning = v; setSpinIcon(); }, setDist: d => { camDist = distGoal = d; }, dist: () => camDist, setView2: (y, p) => { yaw = y; pitch = p; velYaw = velPitch = 0; applyTurn(); } };
+</script>
+</body>
+</html>
